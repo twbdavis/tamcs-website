@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(magick -version)",
+      "Bash(ffmpeg -version)",
+      "Bash(node _convert-images.mjs)",
+      "Bash(ffmpeg -y -i \"IMG_2179.HEIC\" -vf \"scale='min\\(1920,iw\\)':-2\" -q:v 4 \"IMG_2179.jpg\")",
+      "Bash(ffprobe -v error -show_entries stream=index,codec_name,width,height -of csv=p=0 \"IMG_2179.HEIC\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-AppxPackage -Name '*HEIF*','*HEVC*' | Select-Object Name,Version\")",
+      "Bash(pip install *)",
+      "Bash(python _convert-heic.py)",
+      "Bash(node _convert-team.mjs)"
     ]
   }
 }
