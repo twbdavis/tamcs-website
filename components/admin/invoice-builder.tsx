@@ -14,8 +14,11 @@ const ISSUER = {
 
 const MAROON: [number, number, number] = [80, 0, 0]; // #500000
 const CREAM: [number, number, number] = [248, 245, 241]; // #F8F5F1
-const TEXT: [number, number, number] = [33, 33, 33];
-const MUTED: [number, number, number] = [120, 120, 120];
+const BORDER: [number, number, number] = [224, 217, 210]; // #E0D9D2
+const INK: [number, number, number] = [40, 40, 40]; // #282828
+const MUTED: [number, number, number] = [99, 96, 92]; // #63605C
+const ACCENT: [number, number, number] = [193, 170, 143]; // #C1AA8F
+const PAID_GREEN: [number, number, number] = [29, 108, 67];
 
 type Status = "due" | "paid";
 
@@ -43,7 +46,7 @@ function formatDate(d: Date): string {
   });
 }
 
-export function InvoiceBuilder({ issuerName }: { issuerName: string | null }) {
+export function InvoiceBuilder() {
   const [recipientName, setRecipientName] = useState("");
   const [includeAddress, setIncludeAddress] = useState(false);
   const [recipientAddress, setRecipientAddress] = useState("");
@@ -78,103 +81,192 @@ export function InvoiceBuilder({ issuerName }: { issuerName: string | null }) {
       const pageW = doc.internal.pageSize.getWidth();
       const pageH = doc.internal.pageSize.getHeight();
       const margin = 50;
+      const contentW = pageW - margin * 2;
       const issuedAt = new Date();
       const invoiceNumber = buildInvoiceNumber(issuedAt);
 
-      // ── Cream background for the whole page
-      doc.setFillColor(...CREAM);
+      // White page background
+      doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pageW, pageH, "F");
 
-      // ── Maroon header bar
-      const headerH = 90;
+      // ── 1. Maroon header bar + cream/gold accent line
       doc.setFillColor(...MAROON);
-      doc.rect(0, 0, pageW, headerH, "F");
+      doc.rect(0, 0, pageW, 6, "F");
+      doc.setFillColor(...ACCENT);
+      doc.rect(0, 6, pageW, 3, "F");
 
-      // Logo/text
+      // ── 2. Logo (left) + Summary card (right)
+      const topY = 40;
+      const topH = 150;
+      const logoW = 150;
+      const gap = 22;
+      const cardX = margin + logoW + gap;
+      const cardW = pageW - margin - cardX;
+
+      // Logo: block "A&M" with "CLUB SWIMMING" subtitle, vertically centered
+      const logoCx = margin + logoW / 2;
+      const logoCy = topY + topH / 2;
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...MAROON);
+      doc.setFontSize(60);
+      doc.text("A&M", logoCx, logoCy, { align: "center" });
+      doc.setFontSize(11);
+      doc.setCharSpace(2);
+      doc.text("CLUB SWIMMING", logoCx, logoCy + 26, { align: "center" });
+      doc.setCharSpace(0);
+
+      // Summary card — white with maroon top header strip
+      const summaryHeaderH = 44;
+      const cardR = 10;
+
+      // Card body (white, full)
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.6);
+      doc.roundedRect(cardX, topY, cardW, topH, cardR, cardR, "FD");
+
+      // Maroon top strip — top corners rounded, bottom flattened by overlay rect
+      doc.setFillColor(...MAROON);
+      doc.roundedRect(cardX, topY, cardW, summaryHeaderH, cardR, cardR, "F");
+      doc.rect(cardX, topY + summaryHeaderH - cardR, cardW, cardR, "F");
+
+      // "INVOICE" white text
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.text("TEXAS A&M CLUB SWIMMING", margin, 42);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.text("Aggie Swim & Dive · Est. 1991", margin, 60);
+      doc.setFontSize(22);
+      doc.text("INVOICE", cardX + 18, topY + 30);
 
-      // INVOICE label right-aligned
+      // Body of summary card
+      let yi = topY + summaryHeaderH + 18;
+      doc.setTextColor(...INK);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(28);
-      doc.text("INVOICE", pageW - margin, 50, { align: "right" });
+      doc.setFontSize(10);
+      doc.text("Texas A&M University Club Swimming", cardX + 18, yi);
+      yi += 13;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...MUTED);
+      doc.text("Official billing document", cardX + 18, yi);
+      yi += 12;
 
-      // ── Summary card
-      let y = headerH + 28;
-      const summaryH = 70;
-      drawCard(doc, margin, y, pageW - margin * 2, summaryH);
+      // Divider
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.5);
+      doc.line(cardX + 18, yi, cardX + cardW - 18, yi);
+      yi += 14;
 
+      // Three rows: label (left, muted) → value (right, ink)
+      const labelX = cardX + 18;
+      const valueX = cardX + cardW - 18;
+      const rowGap = 17;
+
+      const drawRow = (
+        label: string,
+        value: string,
+        valueColor: [number, number, number] = INK,
+      ) => {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...MUTED);
+        doc.text(label, labelX, yi);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9.5);
+        doc.setTextColor(...valueColor);
+        doc.text(value, valueX, yi, { align: "right" });
+        yi += rowGap;
+      };
+
+      drawRow("Invoice Number", invoiceNumber);
+      drawRow("Invoice Date", formatDate(issuedAt));
+      drawRow(
+        "Status",
+        status === "paid" ? "PAID" : "DUE",
+        status === "paid" ? PAID_GREEN : MAROON,
+      );
+
+      // ── 3. Accent divider
+      let y = topY + topH + 22;
+      doc.setDrawColor(...ACCENT);
+      doc.setLineWidth(1);
+      doc.line(margin, y, pageW - margin, y);
+      y += 26;
+
+      // ── 4. Bill To / Issued By cards
+      const partyGap = 16;
+      const partyW = (contentW - partyGap) / 2;
+      const partyH = 100;
+      const billX = margin;
+      const issuerX = margin + partyW + partyGap;
+
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.6);
+      doc.roundedRect(billX, y, partyW, partyH, 8, 8, "FD");
+      doc.roundedRect(issuerX, y, partyW, partyH, 8, 8, "FD");
+
+      // BILL TO
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
-      doc.setTextColor(...MUTED);
-      doc.text("INVOICE #", margin + 16, y + 22);
-      doc.text("DATE", margin + 200, y + 22);
-      doc.text("STATUS", pageW - margin - 16, y + 22, { align: "right" });
+      doc.setTextColor(...MAROON);
+      doc.setCharSpace(1);
+      doc.text("BILL TO", billX + 16, y + 22);
+      doc.setCharSpace(0);
 
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11.5);
+      doc.setTextColor(...INK);
+      doc.text(recipientName, billX + 16, y + 42, {
+        maxWidth: partyW - 32,
+      });
+
+      if (includeAddress && recipientAddress.trim()) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(...MUTED);
+        let ay = y + 60;
+        const lines = recipientAddress
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        for (const line of lines) {
+          doc.text(line, billX + 16, ay, { maxWidth: partyW - 32 });
+          ay += 13;
+        }
+      }
+
+      // ISSUED BY
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(...MAROON);
+      doc.setCharSpace(1);
+      doc.text("ISSUED BY", issuerX + 16, y + 22);
+      doc.setCharSpace(0);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11.5);
+      doc.setTextColor(...INK);
+      doc.text(ISSUER.name, issuerX + 16, y + 42, {
+        maxWidth: partyW - 32,
+      });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...MUTED);
+      doc.text(ISSUER.addressLine1, issuerX + 16, y + 60);
+      doc.text(ISSUER.addressLine2, issuerX + 16, y + 73);
+
+      y += partyH + 28;
+
+      // ── 5. Itemized Charges title + table
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13);
-      doc.setTextColor(...TEXT);
-      doc.text(invoiceNumber, margin + 16, y + 46);
-      doc.setFont("helvetica", "normal");
-      doc.text(formatDate(issuedAt), margin + 200, y + 46);
+      doc.setTextColor(...INK);
+      doc.text("Itemized Charges", margin, y);
+      y += 14;
 
-      // Status chip
-      const chipText =
-        status === "paid" ? "AMOUNT PAID" : "AMOUNT DUE";
-      const chipFill: [number, number, number] =
-        status === "paid" ? [34, 139, 34] : MAROON;
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      const chipW = doc.getTextWidth(chipText) + 18;
-      const chipH = 18;
-      const chipX = pageW - margin - 16 - chipW;
-      const chipY = y + 36;
-      doc.setFillColor(...chipFill);
-      doc.roundedRect(chipX, chipY, chipW, chipH, 4, 4, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.text(chipText, chipX + chipW / 2, chipY + 12, { align: "center" });
-
-      y += summaryH + 20;
-
-      // ── Bill To / Issued By cards
-      const colGap = 16;
-      const colW = (pageW - margin * 2 - colGap) / 2;
-      const partyH = 110;
-      drawCard(doc, margin, y, colW, partyH);
-      drawCard(doc, margin + colW + colGap, y, colW, partyH);
-
-      drawPartyHeading(doc, "BILL TO", margin + 16, y + 22);
-      drawPartyBlock(doc, margin + 16, y + 42, [
-        recipientName,
-        ...(includeAddress && recipientAddress.trim()
-          ? recipientAddress.split("\n").map((s) => s.trim()).filter(Boolean)
-          : []),
-      ]);
-
-      drawPartyHeading(
-        doc,
-        "ISSUED BY",
-        margin + colW + colGap + 16,
-        y + 22,
-      );
-      drawPartyBlock(doc, margin + colW + colGap + 16, y + 42, [
-        ISSUER.name,
-        ISSUER.addressLine1,
-        ISSUER.addressLine2,
-        ...(issuerName ? [`Prepared by ${issuerName}`] : []),
-      ]);
-
-      y += partyH + 24;
-
-      // ── Line items table
       autoTable(doc, {
         startY: y,
-        head: [["Description", "Qty", "Unit Price", "Total"]],
+        head: [["DESCRIPTION", "QTY", "UNIT PRICE", "AMOUNT"]],
         body: [
           [
             description,
@@ -188,14 +280,19 @@ export function InvoiceBuilder({ issuerName }: { issuerName: string | null }) {
         styles: {
           font: "helvetica",
           fontSize: 10,
-          cellPadding: 8,
-          textColor: TEXT,
-          lineColor: [220, 220, 220],
+          cellPadding: 10,
+          textColor: INK,
+          lineColor: BORDER,
+          lineWidth: 0.5,
+          valign: "middle",
         },
         headStyles: {
           fillColor: MAROON,
           textColor: [255, 255, 255],
           fontStyle: "bold",
+          fontSize: 9.5,
+          halign: "left",
+          cellPadding: { top: 10, right: 10, bottom: 10, left: 10 },
         },
         columnStyles: {
           0: { cellWidth: "auto" },
@@ -205,52 +302,55 @@ export function InvoiceBuilder({ issuerName }: { issuerName: string | null }) {
         },
       });
 
-      // After the table
-      const lastY =
-        (
-          doc as unknown as { lastAutoTable?: { finalY: number } }
-        ).lastAutoTable?.finalY ?? y;
-      y = lastY + 24;
+      const tableEndY =
+        (doc as unknown as { lastAutoTable?: { finalY: number } })
+          .lastAutoTable?.finalY ?? y;
+      y = tableEndY + 22;
 
-      // ── Total card
-      const totalCardW = 240;
-      const totalCardH = 70;
+      // ── 6. Total card (cream/tan, right-aligned)
+      const totalCardW = 230;
+      const totalCardH = 78;
       const totalCardX = pageW - margin - totalCardW;
-      doc.setFillColor(...MAROON);
-      doc.roundedRect(totalCardX, y, totalCardW, totalCardH, 6, 6, "F");
-      doc.setTextColor(255, 255, 255);
+      doc.setFillColor(...CREAM);
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.6);
+      doc.roundedRect(totalCardX, y, totalCardW, totalCardH, 10, 10, "FD");
+
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
+      doc.setFontSize(9);
+      doc.setTextColor(...MUTED);
+      doc.setCharSpace(1);
       doc.text(
         status === "paid" ? "AMOUNT PAID" : "AMOUNT DUE",
         totalCardX + 18,
         y + 26,
       );
-      doc.setFontSize(22);
-      doc.text(formatMoney(total), totalCardX + totalCardW - 18, y + 50, {
+      doc.setCharSpace(0);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(28);
+      doc.setTextColor(...MAROON);
+      doc.text(formatMoney(total), totalCardX + totalCardW - 18, y + 58, {
         align: "right",
       });
 
-      // ── Footer
-      const footerY = pageH - 60;
-      doc.setDrawColor(...MAROON);
-      doc.setLineWidth(2);
-      doc.line(margin, footerY, pageW - margin, footerY);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(...MAROON);
-      doc.text("PAYMENT INSTRUCTIONS", margin, footerY + 16);
+      // ── 7. Footer
+      const footerLineY = pageH - 70;
+      doc.setDrawColor(...ACCENT);
+      doc.setLineWidth(1);
+      doc.line(margin, footerLineY, pageW - margin, footerLineY);
+
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(...TEXT);
       doc.setFontSize(9);
-      doc.text(
+      doc.setTextColor(...MUTED);
+      const footerText =
         status === "paid"
-          ? "This invoice has been marked PAID. No further action required. Thanks for your support of Texas A&M Club Swimming!"
-          : "Please remit payment via Venmo @TAMUClubSwim or by check made out to Texas A&M Club Swimming. Reference the invoice number above.",
-        margin,
-        footerY + 30,
-        { maxWidth: pageW - margin * 2 },
-      );
+          ? "Payment has been received and applied to this invoice. Reference the invoice number above for your records."
+          : "Please remit payment to Texas A&M University Club Swimming and reference the invoice number above.";
+      doc.text(footerText, pageW / 2, footerLineY + 22, {
+        align: "center",
+        maxWidth: contentW,
+      });
 
       doc.save(`invoice-${invoiceNumber}.pdf`);
       toast.success("Invoice downloaded");
@@ -384,45 +484,4 @@ export function InvoiceBuilder({ issuerName }: { issuerName: string | null }) {
       </div>
     </div>
   );
-}
-
-function drawCard(
-  doc: import("jspdf").jsPDF,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-) {
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(225, 220, 210);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(x, y, w, h, 6, 6, "FD");
-}
-
-function drawPartyHeading(
-  doc: import("jspdf").jsPDF,
-  label: string,
-  x: number,
-  y: number,
-) {
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(...MUTED);
-  doc.text(label, x, y);
-}
-
-function drawPartyBlock(
-  doc: import("jspdf").jsPDF,
-  x: number,
-  y: number,
-  lines: string[],
-) {
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(...TEXT);
-  let cursor = y;
-  for (const line of lines) {
-    doc.text(line, x, cursor);
-    cursor += 14;
-  }
 }

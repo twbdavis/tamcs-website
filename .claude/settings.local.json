@@ -14,7 +14,13 @@
       "Bash(python _convert-heic.py)",
       "Bash(node _convert-team.mjs)",
       "Bash(echo \"EXIT=$?\")",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "mcp__claude_ai_Google_Drive__get_file_metadata",
+      "mcp__claude_ai_Google_Drive__download_file_content",
+      "Bash(npm ls *)",
+      "Bash(node -e \"console.log\\(require.resolve\\('sharp'\\)\\)\")",
+      "Bash(node *)",
+      "Bash(xxd)"
     ]
   }
 }

@@ -5,8 +5,7 @@ import { InvoiceBuilder } from "@/components/admin/invoice-builder";
 export const metadata = { title: "Invoice Builder" };
 
 export default async function InvoicePage() {
-  const { profile } = await requireMinRole("officer");
-  const issuerName = profile?.full_name ?? null;
+  await requireMinRole("officer");
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -25,7 +24,7 @@ export default async function InvoicePage() {
       </p>
 
       <section className="mt-8 rounded-lg border p-5">
-        <InvoiceBuilder issuerName={issuerName} />
+        <InvoiceBuilder />
       </section>
     </div>
   );
