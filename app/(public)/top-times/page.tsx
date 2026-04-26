@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Top Times",
-  description: "Top times for Texas A&M Club Swim, provided by SwimCloud.",
+  description: "Top times for Texas A&M Club Swimming, provided by SwimCloud.",
 };
 
 const SWIMCLOUD_URL = "https://www.swimcloud.com/times/iframe/?team=10030419";

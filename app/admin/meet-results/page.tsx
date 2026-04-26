@@ -14,7 +14,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import type { MeetResult } from "@/lib/content-types";
 
-export const metadata = { title: "Manage Meet Results" };
+export const metadata = { title: "Manage Meets" };
 
 export default async function AdminMeetResultsPage() {
   const supabase = await createClient();
@@ -31,7 +31,7 @@ export default async function AdminMeetResultsPage() {
           ← Admin
         </Link>
       </div>
-      <h1 className="text-3xl font-bold">Meet Results</h1>
+      <h1 className="text-3xl font-bold">Meets</h1>
 
       <section className="mt-8 rounded-lg border p-5">
         <h2 className="mb-4 text-lg font-semibold">Add new meet</h2>

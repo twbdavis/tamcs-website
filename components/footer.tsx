@@ -42,7 +42,7 @@ export function Footer() {
     <footer className="mt-auto border-t bg-muted/30">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
         <div className="text-sm text-muted-foreground">
-          &copy; {year} Texas A&amp;M Club Swim. All rights reserved.
+          &copy; {year} Texas A&amp;M Club Swimming. All rights reserved.
         </div>
         <nav className="flex items-center gap-4">
           <Link

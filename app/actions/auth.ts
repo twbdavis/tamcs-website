@@ -54,16 +54,24 @@ export async function signupAction(
   const supabase = await createClient();
   const origin = await getOrigin();
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
       data: { full_name: parsed.data.fullName },
-      emailRedirectTo: `${origin}/auth/confirm`,
+      emailRedirectTo: `${origin}/auth/confirm?next=/onboarding`,
     },
   });
 
   if (error) return { error: error.message };
+
+  // When email confirmation is disabled, signUp returns a live session.
+  // Send those users straight to onboarding so they get the form right
+  // away. Otherwise show the "check your email" message; the email link
+  // points to /auth/confirm?next=/onboarding which lands them there.
+  if (data.session) {
+    redirect("/onboarding");
+  }
 
   return {
     success: "Check your email to confirm your account before logging in.",

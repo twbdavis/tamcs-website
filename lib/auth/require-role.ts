@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { hasRoleAtLeast } from "@/lib/auth/roles";
 import type { Profile, UserRole } from "@/lib/types";
 
 export async function getUserAndProfile(): Promise<
-  { user: null; profile: null } | { user: { id: string; email?: string }; profile: Profile | null }
+  | { user: null; profile: null }
+  | { user: { id: string; email?: string }; profile: Profile | null }
 > {
   const supabase = await createClient();
   const {
@@ -30,6 +32,14 @@ export async function requireUser() {
 export async function requireRole(allowed: UserRole[]) {
   const result = await requireUser();
   if (!result.profile || !allowed.includes(result.profile.role)) {
+    redirect("/dashboard?error=not_authorized");
+  }
+  return result;
+}
+
+export async function requireMinRole(min: UserRole) {
+  const result = await requireUser();
+  if (!hasRoleAtLeast(result.profile?.role, min)) {
     redirect("/dashboard?error=not_authorized");
   }
   return result;

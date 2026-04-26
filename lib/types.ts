@@ -1,10 +1,20 @@
 export type UserRole =
+  | "president"
+  | "admin"
+  | "officer"
+  | "member"
   | "athlete"
   | "coach"
-  | "officer"
-  | "admin"
   | "alumni"
   | "guest";
+
+export type ClassYear =
+  | "Freshman"
+  | "Sophomore"
+  | "Junior"
+  | "Senior"
+  | "5th Year"
+  | "Graduate";
 
 export type Profile = {
   id: string;
@@ -14,6 +24,13 @@ export type Profile = {
   year: string | null;
   bio: string | null;
   avatar_url: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  birthday: string | null; // YYYY-MM-DD
+  class_year: ClassYear | null;
+  uin: string | null;
+  constitution_agreed: boolean;
+  onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 };

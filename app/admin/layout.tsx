@@ -1,15 +1,16 @@
 import { TopNav } from "@/components/nav/top-nav";
 import { Footer } from "@/components/footer";
-import { requireRole } from "@/lib/auth/require-role";
+import { requireMinRole } from "@/lib/auth/require-role";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Belt-and-suspenders: proxy.ts already redirects unauthorized users,
-  // but this enforces it again server-side in case proxy is bypassed.
-  await requireRole(["officer", "admin"]);
+  // Admin section is for admins and the president. Officers manage nothing
+  // here — they get a read-only view on /dashboard.
+  // Belt-and-suspenders: proxy.ts already redirects unauthorized users.
+  await requireMinRole("admin");
 
   return (
     <>

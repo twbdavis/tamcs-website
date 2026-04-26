@@ -10,7 +10,7 @@ export default function AuthLayout({
       <header className="border-b bg-primary text-primary-foreground">
         <div className="mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-6 lg:px-8">
           <Link href="/" className="text-lg font-bold tracking-tight">
-            Texas A&amp;M Club Swim
+            Texas A&amp;M Club Swimming
           </Link>
         </div>
       </header>

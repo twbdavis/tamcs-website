@@ -5,14 +5,12 @@ import { PhotoCarousel } from "@/components/photo-carousel";
 const HERO_IMAGES = [
   { src: "/images/Team_Picture.jpg", alt: "TAMCS team picture" },
   { src: "/images/IMG_1967.JPG", alt: "TAMCS team photo" },
-  { src: "/images/IMG_2111.JPG", alt: "TAMCS team photo" },
-  { src: "/images/IMG_2179.jpg", alt: "TAMCS team photo" },
+  { src: "/images/IMG_2453%20(1).JPG", alt: "TAMCS team photo" },
   { src: "/images/IMG_2728.jpg", alt: "TAMCS team photo" },
+  { src: "/images/IMG_3641.jpeg", alt: "TAMCS team photo" },
   { src: "/images/IMG_5740.jpg", alt: "TAMCS at a meet" },
-  { src: "/images/IMG_5762.jpg", alt: "TAMCS at a meet" },
   { src: "/images/IMG_5765.jpg", alt: "TAMCS at a meet" },
   { src: "/images/IMG_5849.jpg", alt: "TAMCS team photo" },
-  { src: "/images/IMG_8469.JPG", alt: "TAMCS team event" },
 ];
 
 const FEATURE_LINKS: { href: string; label: string; description: string }[] = [
@@ -39,13 +37,8 @@ const FEATURE_LINKS: { href: string; label: string; description: string }[] = [
   },
   {
     href: "/meet-results",
-    label: "Meet Results",
+    label: "Meets",
     description: "How the Aggies have been racing in recent meets.",
-  },
-  {
-    href: "/blog",
-    label: "Blog",
-    description: "News and write-ups from the team.",
   },
 ];
 
@@ -79,7 +72,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       <section className="relative isolate h-[70vh] min-h-[460px] w-full overflow-hidden bg-primary text-primary-foreground">
-        <PhotoCarousel images={HERO_IMAGES} alt="Texas A&M Club Swim" />
+        <PhotoCarousel images={HERO_IMAGES} alt="Texas A&M Club Swimming" />
 
         <div className="pointer-events-none absolute inset-0 flex items-end">
           <div className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
@@ -87,7 +80,7 @@ export default function HomePage() {
               Texas A&amp;M University
             </p>
             <h1 className="mt-2 text-5xl font-extrabold tracking-tight text-white drop-shadow-md sm:text-6xl">
-              Texas A&amp;M Club Swim
+              Texas A&amp;M Club Swimming
             </h1>
             <div className="pointer-events-auto mt-6 flex flex-wrap gap-3">
               <Link

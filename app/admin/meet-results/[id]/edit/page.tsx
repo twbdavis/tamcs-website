@@ -28,7 +28,7 @@ export default async function EditMeetResultPage({
           href="/admin/meet-results"
           className="text-muted-foreground hover:text-primary"
         >
-          ← Meet Results
+          ← Meets
         </Link>
       </div>
       <h1 className="text-3xl font-bold">Edit meet</h1>

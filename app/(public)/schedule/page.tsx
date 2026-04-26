@@ -1,90 +1,73 @@
 import { createClient } from "@/lib/supabase/server";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import type { ScheduleEvent } from "@/lib/content-types";
+import { ScheduleCalendar } from "@/components/schedule-calendar";
+import { parseMonthParam } from "@/lib/schedule";
+import type {
+  Coach,
+  CoachAssignment,
+  CoachingScheduleEntry,
+} from "@/lib/content-types";
 
 export const metadata = { title: "Schedule" };
 
-const TYPE_LABELS: Record<ScheduleEvent["type"], string> = {
-  practice: "Practice",
-  meet: "Meet",
-  social: "Social",
-  other: "Event",
-};
+export default async function SchedulePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
+  const { month } = await searchParams;
+  const { year, monthIndex0 } = parseMonthParam(month);
 
-export default async function SchedulePage() {
   const supabase = await createClient();
-  const nowIso = new Date().toISOString();
+  const [
+    { data: entries },
+    { data: coaches },
+    { data: assignments },
+  ] = await Promise.all([
+    supabase
+      .from("coaching_schedule")
+      .select("*")
+      .returns<CoachingScheduleEntry[]>(),
+    supabase
+      .from("coaches")
+      .select("*")
+      .order("display_order")
+      .order("name")
+      .returns<Coach[]>(),
+    supabase
+      .from("coaching_schedule_coaches")
+      .select("*")
+      .returns<CoachAssignment[]>(),
+  ]);
 
-  const { data: events } = await supabase
-    .from("schedule_events")
-    .select("*")
-    .gte("date", nowIso)
-    .order("date", { ascending: true })
-    .returns<ScheduleEvent[]>();
+  const coachById = new Map<string, Coach>();
+  for (const c of coaches ?? []) coachById.set(c.id, c);
+
+  const coachesByPractice = new Map<string, Coach[]>();
+  for (const a of assignments ?? []) {
+    const c = coachById.get(a.coach_id);
+    if (!c) continue;
+    const list = coachesByPractice.get(a.schedule_id) ?? [];
+    list.push(c);
+    coachesByPractice.set(a.schedule_id, list);
+  }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-      <header className="mb-8">
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+      <header className="mb-6">
         <h1 className="text-4xl font-bold">Schedule</h1>
         <p className="mt-2 text-muted-foreground">
-          Upcoming practices, meets, and team events.
+          Practices, dryland, meetings, and team events. Coaches assigned per
+          session shown in each cell.
         </p>
       </header>
 
-      {!events || events.length === 0 ? (
-        <p className="text-muted-foreground">No upcoming events scheduled.</p>
-      ) : (
-        <div className="overflow-hidden rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/40">
-                <TableHead>Date</TableHead>
-                <TableHead>Event</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Location</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {events.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell className="whitespace-nowrap">
-                    {formatDate(e.date)}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {e.title}
-                    {e.description ? (
-                      <p className="mt-1 whitespace-normal text-xs font-normal text-muted-foreground">
-                        {e.description}
-                      </p>
-                    ) : null}
-                  </TableCell>
-                  <TableCell>{TYPE_LABELS[e.type]}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {e.location ?? "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <ScheduleCalendar
+        basePath="/schedule"
+        year={year}
+        monthIndex0={monthIndex0}
+        entries={entries ?? []}
+        coachesByPractice={coachesByPractice}
+      />
     </div>
   );
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
 }

@@ -3,7 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { publicLinks } from "@/components/nav/top-nav-links";
+import {
+  publicLinks,
+  visitorLinks,
+  memberLinks,
+} from "@/components/nav/top-nav-links";
 
 export function MobileMenu({ signedIn }: { signedIn: boolean }) {
   const [open, setOpen] = useState(false);
@@ -22,7 +26,10 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
       {open && (
         <div className="fixed inset-x-0 top-16 z-30 border-b border-white/10 bg-primary text-primary-foreground shadow-md lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col px-4 py-3 sm:px-6">
-            {publicLinks.map((l) => (
+            {[
+              ...publicLinks,
+              ...(signedIn ? memberLinks : visitorLinks),
+            ].map((l) => (
               <Link
                 key={l.href}
                 href={l.href}

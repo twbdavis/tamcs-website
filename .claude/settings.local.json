@@ -12,7 +12,9 @@
       "Bash(powershell.exe -NoProfile -Command \"Get-AppxPackage -Name '*HEIF*','*HEVC*' | Select-Object Name,Version\")",
       "Bash(pip install *)",
       "Bash(python _convert-heic.py)",
-      "Bash(node _convert-team.mjs)"
+      "Bash(node _convert-team.mjs)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(npm install *)"
     ]
   }
 }

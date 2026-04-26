@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getAdminClient } from "@/lib/auth/require-admin-action";
+import { getAuthedClient } from "@/lib/auth/require-admin-action";
 
 type FormState = { error?: string; success?: string };
 
@@ -20,7 +20,7 @@ export async function upsertOfficerAction(
   _prev: FormState | null,
   formData: FormData,
 ): Promise<FormState> {
-  const auth = await getAdminClient();
+  const auth = await getAuthedClient("admin");
   if ("error" in auth) return { error: auth.error };
 
   let payload;
@@ -53,7 +53,7 @@ export async function upsertOfficerAction(
 }
 
 export async function deleteOfficerAction(formData: FormData): Promise<void> {
-  const auth = await getAdminClient();
+  const auth = await getAuthedClient("admin");
   if ("error" in auth) return;
   const id = formData.get("id");
   if (typeof id !== "string") return;

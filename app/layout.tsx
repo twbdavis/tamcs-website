@@ -17,11 +17,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Texas A&M Club Swim",
-    template: "%s | Texas A&M Club Swim",
+    default: "Texas A&M Club Swimming",
+    template: "%s | Texas A&M Club Swimming",
   },
   description:
-    "The official site of Texas A&M Club Swim — a student-run competitive swimming organization at Texas A&M University.",
+    "The official site of Texas A&M Club Swimming — a student-run competitive swimming organization at Texas A&M University.",
 };
 
 export default function RootLayout({

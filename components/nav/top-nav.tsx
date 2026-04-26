@@ -3,7 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { buttonVariants } from "@/components/ui/button";
 import { UserMenu } from "@/components/nav/user-menu";
 import { MobileMenu } from "@/components/nav/mobile-menu";
-import { publicLinks } from "@/components/nav/top-nav-links";
+import {
+  publicLinks,
+  visitorLinks,
+  memberLinks,
+} from "@/components/nav/top-nav-links";
 
 export async function TopNav() {
   const supabase = await createClient();
@@ -14,14 +18,20 @@ export async function TopNav() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-primary text-primary-foreground shadow-sm">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
+        <Link
+          href={user ? "/dashboard" : "/"}
+          className="flex items-center gap-2"
+        >
           <span className="text-lg font-bold tracking-tight">
             Texas A&amp;M Club Swimming
           </span>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          {publicLinks.map((l) => (
+          {[
+            ...publicLinks,
+            ...(user ? memberLinks : visitorLinks),
+          ].map((l) => (
             <Link
               key={l.href}
               href={l.href}
