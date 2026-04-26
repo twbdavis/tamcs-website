@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FolderOpen, FileText } from "lucide-react";
+import { FolderOpen, FileText, Download } from "lucide-react";
 import { requireUser } from "@/lib/auth/require-role";
 import {
   hasRoleAtLeast,
@@ -212,6 +212,23 @@ export default async function DashboardPage({
                   : "Search and sort the team roster (read-only)."}
               </p>
             </Link>
+            <a
+              href="/downloads/FinanceToolSwim.exe"
+              download
+              className={`${CARD_CLASS} flex items-start gap-4`}
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#500000]/10 text-[#500000] transition-colors group-hover:bg-[#500000] group-hover:text-white">
+                <Download className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold group-hover:text-[#500000]">
+                  Finance Tool ↓
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Download the TAMCS finance management application (Windows).
+                </p>
+              </div>
+            </a>
           </div>
         </section>
       ) : null}
