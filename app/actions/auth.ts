@@ -3,12 +3,23 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 import {
+  emailSchema,
   loginSchema,
+  passwordSchema,
   signupSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "@/lib/validations";
+
+const SIGNUP_EMAIL_ALLOWLIST = ["twbdavis@gmail.com"];
+
+const signupSchemaAllowlisted = z.object({
+  fullName: z.string().trim().min(1, "Full name is required"),
+  email: emailSchema,
+  password: passwordSchema,
+});
 
 type ActionResult = { error?: string; success?: string };
 
@@ -42,7 +53,11 @@ export async function signupAction(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  const parsed = signupSchema.safeParse({
+  const rawEmail = String(formData.get("email") ?? "").trim().toLowerCase();
+  const schema = SIGNUP_EMAIL_ALLOWLIST.includes(rawEmail)
+    ? signupSchemaAllowlisted
+    : signupSchema;
+  const parsed = schema.safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email"),
     password: formData.get("password"),
