@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   Smile,
   Dumbbell,
@@ -12,6 +11,7 @@ import {
   GraduationCap,
   Award,
   ShieldCheck,
+  Check,
 } from "lucide-react";
 import {
   Table,
@@ -288,21 +288,46 @@ export default function JoinUsPage() {
 
       {/* ── Dues ── */}
       <section className="border-t bg-background">
-        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8 text-center">
-          <h2 className={HEADING_ACCENT}>Dues</h2>
-          <div className="mt-8 inline-flex flex-col items-center rounded-2xl border-2 border-[#500000]/30 bg-card px-10 py-8 shadow-sm">
-            <div className="text-4xl font-extrabold text-[#500000]">$200</div>
-            <div className="text-sm text-muted-foreground">
-              full year &middot; or $125 per semester
+        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className={HEADING_ACCENT}>Dues</h2>
+          </div>
+
+          <div className="mx-auto mt-8 max-w-xl overflow-hidden rounded-2xl border-2 border-[#500000]/30 bg-card shadow-sm">
+            <div className="grid grid-cols-2 divide-x divide-[#500000]/20">
+              <div className="p-6 text-center">
+                <div className="text-xs font-semibold uppercase tracking-widest text-[#500000]">
+                  Full year
+                </div>
+                <div className="mt-2 text-4xl font-extrabold text-[#500000]">
+                  $200
+                </div>
+              </div>
+              <div className="p-6 text-center">
+                <div className="text-xs font-semibold uppercase tracking-widest text-[#500000]">
+                  Per semester
+                </div>
+                <div className="mt-2 text-4xl font-extrabold text-[#500000]">
+                  $125
+                </div>
+              </div>
             </div>
-            <div className="mt-5 grid gap-1 text-sm">
-              <div>
-                <span className="font-semibold">Includes:</span> team shirt,
-                cap, and rally towel
+
+            <div className="border-t border-[#500000]/20 bg-muted/20 p-6">
+              <div className="text-xs font-semibold uppercase tracking-widest text-[#500000]">
+                What&apos;s included
               </div>
-              <div className="text-muted-foreground">
-                Team suit is not included with dues
-              </div>
+              <ul className="mt-3 grid gap-2 text-sm sm:grid-cols-3">
+                {["Team shirt", "Team cap", "Rally towel"].map((item) => (
+                  <li key={item} className="flex items-center gap-2">
+                    <Check className="size-4 shrink-0 text-[#500000]" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-xs italic text-muted-foreground">
+                Team suit is not included with dues.
+              </p>
             </div>
           </div>
         </div>
@@ -353,21 +378,16 @@ export default function JoinUsPage() {
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-base text-white/85">
             Tryouts are held at the beginning of each semester at the TAMU
-            Natatorium. Create an account on the site, then come find us at the
-            pool.
+            Natatorium. Reach out with any questions before then — we&apos;ll
+            handle accounts after you&apos;ve made the team.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              href="/signup"
-              className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-base font-semibold text-[#500000] shadow-sm transition-colors hover:bg-white/90"
-            >
-              Create your account
-            </Link>
             <a
               href="mailto:tamuclubswim@gmail.com"
-              className="inline-flex h-11 items-center justify-center rounded-md border border-white/40 bg-transparent px-6 text-base font-semibold text-white transition-colors hover:bg-white/10"
+              className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-base font-semibold text-[#500000] shadow-sm transition-colors hover:bg-white/90"
             >
+              <Mail className="mr-2 size-4" />
               Email the team
             </a>
           </div>
