@@ -27,8 +27,9 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
         <div className="fixed inset-x-0 top-16 z-30 border-b border-white/10 bg-primary text-primary-foreground shadow-md lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col px-4 py-3 sm:px-6">
             {[
+              ...(signedIn ? [] : visitorLinks),
               ...publicLinks,
-              ...(signedIn ? memberLinks : visitorLinks),
+              ...(signedIn ? memberLinks : []),
             ].map((l) => (
               <Link
                 key={l.href}
@@ -45,7 +46,7 @@ export function MobileMenu({ signedIn }: { signedIn: boolean }) {
                 onClick={() => setOpen(false)}
                 className="mt-2 rounded-md bg-white/15 px-3 py-2 text-sm font-semibold hover:bg-white/25"
               >
-                Log in
+                Athlete log in
               </Link>
             )}
           </nav>

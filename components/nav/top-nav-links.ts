@@ -2,9 +2,7 @@
 export const publicLinks = [
   { href: "/officers", label: "Officers" },
   { href: "/schedule", label: "Schedule" },
-  { href: "/meet-results", label: "Meets" },
   { href: "/team-records", label: "Records" },
-  { href: "/top-times", label: "Top Times" },
 ];
 
 // Links only visitors see — current members don't need recruiting pages.

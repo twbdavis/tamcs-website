@@ -28,8 +28,9 @@ export async function TopNav() {
 
         <nav className="hidden items-center gap-1 lg:flex">
           {[
+            ...(user ? [] : visitorLinks),
             ...publicLinks,
-            ...(user ? memberLinks : visitorLinks),
+            ...(user ? memberLinks : []),
           ].map((l) => (
             <Link
               key={l.href}
@@ -49,7 +50,7 @@ export async function TopNav() {
               href="/login"
               className="hidden h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#500000] shadow-sm transition-colors hover:bg-white/90 sm:inline-flex"
             >
-              Log in
+              Athlete log in
             </Link>
           )}
           <MobileMenu signedIn={!!user} />

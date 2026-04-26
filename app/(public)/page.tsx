@@ -4,10 +4,10 @@ import { PhotoCarousel } from "@/components/photo-carousel";
 
 const HERO_IMAGES = [
   { src: "/images/Team_Picture.jpg", alt: "TAMCS team picture" },
-  { src: "/images/IMG_1967.JPG", alt: "TAMCS team photo" },
+  { src: "/images/IMG_3641.jpeg", alt: "TAMCS team photo" },
   { src: "/images/IMG_2453%20(1).JPG", alt: "TAMCS team photo" },
   { src: "/images/IMG_2728.jpg", alt: "TAMCS team photo" },
-  { src: "/images/IMG_3641.jpeg", alt: "TAMCS team photo" },
+  { src: "/images/IMG_1967.JPG", alt: "TAMCS team photo" },
   { src: "/images/IMG_5740.jpg", alt: "TAMCS at a meet" },
   { src: "/images/IMG_5765.jpg", alt: "TAMCS at a meet" },
   { src: "/images/IMG_5849.jpg", alt: "TAMCS team photo" },
