@@ -41,31 +41,39 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t bg-muted/30">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 sm:px-6 lg:flex-row lg:px-8">
-        <div className="text-sm text-muted-foreground">
-          &copy; {year} Texas A&amp;M Club Swimming. All rights reserved.
+        <div className="flex flex-col items-center lg:items-start">
+          <Link
+            href="/"
+            className="text-base font-bold tracking-tight text-[#500000]"
+          >
+            Texas A&amp;M Club Swimming
+          </Link>
+          <span className="mt-1 text-xs text-muted-foreground">
+            &copy; {year} Texas A&amp;M Club Swimming. All rights reserved.
+          </span>
         </div>
         <nav className="flex items-center gap-4">
           <Link
-            href="https://instagram.com/"
+            href="https://instagram.com/tamuclubswim"
             aria-label="Instagram"
             target="_blank"
             rel="noreferrer"
-            className="text-muted-foreground hover:text-primary"
+            className="text-muted-foreground transition-colors hover:text-[#500000]"
           >
             <InstagramIcon className="size-5" />
           </Link>
           <Link
-            href="https://facebook.com/"
+            href="https://facebook.com/tamuclubswim"
             aria-label="Facebook"
             target="_blank"
             rel="noreferrer"
-            className="text-muted-foreground hover:text-primary"
+            className="text-muted-foreground transition-colors hover:text-[#500000]"
           >
             <FacebookIcon className="size-5" />
           </Link>
           <Link
             href="/join-us"
-            className="text-sm text-muted-foreground hover:text-primary"
+            className="text-sm text-muted-foreground transition-colors hover:text-[#500000]"
           >
             Join the team
           </Link>

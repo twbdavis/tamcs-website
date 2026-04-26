@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { Calendar, Info, Trophy, Users, Waves } from "lucide-react";
 import { PhotoCarousel } from "@/components/photo-carousel";
 
 const HERO_IMAGES = [
@@ -13,32 +13,44 @@ const HERO_IMAGES = [
   { src: "/images/IMG_5849.jpg", alt: "TAMCS team photo" },
 ];
 
-const FEATURE_LINKS: { href: string; label: string; description: string }[] = [
+type FeatureLink = {
+  href: string;
+  label: string;
+  description: string;
+  Icon: typeof Info;
+};
+
+const FEATURE_LINKS: FeatureLink[] = [
   {
     href: "/about",
     label: "About",
     description:
       "Our mission, history, and answers to common questions about the team.",
+    Icon: Info,
   },
   {
     href: "/officers",
     label: "Officers",
     description: "Meet the student executive board running TAMCS this year.",
+    Icon: Users,
   },
   {
     href: "/schedule",
     label: "Schedule",
     description: "Upcoming practices, meets, and team events.",
+    Icon: Calendar,
   },
   {
     href: "/team-records",
     label: "Team Records",
     description: "All-time fastest times in TAMCS history.",
+    Icon: Waves,
   },
   {
     href: "/meet-results",
     label: "Meets",
     description: "How the Aggies have been racing in recent meets.",
+    Icon: Trophy,
   },
 ];
 
@@ -85,16 +97,13 @@ export default function HomePage() {
             <div className="pointer-events-auto mt-6 flex flex-wrap gap-3">
               <Link
                 href="/join-us"
-                className={buttonVariants({ variant: "secondary", size: "lg" })}
+                className="inline-flex h-11 items-center justify-center rounded-md bg-white px-6 text-base font-semibold text-[#500000] shadow-sm transition-colors hover:bg-white/90"
               >
                 Join the team
               </Link>
               <Link
                 href="/schedule"
-                className={
-                  buttonVariants({ variant: "outline", size: "lg" }) +
-                  " border-white/40 bg-transparent text-white hover:bg-white/15 hover:text-white"
-                }
+                className="inline-flex h-11 items-center justify-center rounded-md bg-[#500000] px-6 text-base font-semibold text-white shadow-sm ring-1 ring-white/20 transition-colors hover:bg-[#3d0000]"
               >
                 See the schedule
               </Link>
@@ -103,7 +112,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-3xl px-4 py-20 text-center sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-3xl px-4 pt-12 pb-16 text-center sm:px-6 lg:px-8">
         <h2 className="text-5xl font-extrabold tracking-tight text-primary sm:text-6xl">
           HOWDY!
         </h2>
@@ -118,20 +127,29 @@ export default function HomePage() {
 
       <section className="bg-muted/40">
         <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold">Explore the team</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURE_LINKS.map((l) => (
+          <h2 className="text-2xl font-bold">
+            <span className="border-b-4 border-[#500000] pb-1">
+              Explore the team
+            </span>
+          </h2>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURE_LINKS.map(({ href, label, description, Icon }) => (
               <Link
-                key={l.href}
-                href={l.href}
-                className="group rounded-lg border bg-card p-5 transition-shadow hover:shadow-md"
+                key={href}
+                href={href}
+                className="group flex items-start gap-4 rounded-xl border-2 border-transparent bg-card p-5 shadow-sm ring-1 ring-border transition-all hover:-translate-y-0.5 hover:border-[#500000] hover:shadow-lg hover:ring-[#500000]/20"
               >
-                <div className="text-lg font-semibold group-hover:text-primary">
-                  {l.label} →
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-[#500000]/10 text-[#500000] transition-colors group-hover:bg-[#500000] group-hover:text-white">
+                  <Icon className="size-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-lg font-semibold transition-colors group-hover:text-[#500000]">
+                    {label} →
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {description}
+                  </p>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {l.description}
-                </p>
               </Link>
             ))}
           </div>

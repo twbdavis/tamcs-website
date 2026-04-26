@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { buttonVariants } from "@/components/ui/button";
 import { UserMenu } from "@/components/nav/user-menu";
 import { MobileMenu } from "@/components/nav/mobile-menu";
 import {
@@ -48,7 +47,7 @@ export async function TopNav() {
           ) : (
             <Link
               href="/login"
-              className={buttonVariants({ variant: "secondary", size: "sm" }) + " hidden sm:inline-flex"}
+              className="hidden h-9 items-center justify-center rounded-md bg-white px-4 text-sm font-semibold text-[#500000] shadow-sm transition-colors hover:bg-white/90 sm:inline-flex"
             >
               Log in
             </Link>

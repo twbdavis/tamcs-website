@@ -1,3 +1,4 @@
+import { Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Officer } from "@/lib/content-types";
 
@@ -15,8 +16,12 @@ export default async function OfficersPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="mb-10 text-center">
-        <h1 className="text-4xl font-bold">Meet our Executive Board</h1>
-        <p className="mt-3 text-muted-foreground">
+        <h1 className="text-4xl font-bold">
+          <span className="border-b-4 border-[#500000] pb-1">
+            Meet our Executive Board
+          </span>
+        </h1>
+        <p className="mt-4 text-muted-foreground">
           The student leaders running TAMCS this year.
         </p>
       </header>
@@ -30,7 +35,7 @@ export default async function OfficersPage() {
           {officers.map((o) => (
             <article
               key={o.id}
-              className="flex flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md"
+              className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#500000] hover:shadow-md"
             >
               <div className="flex justify-center bg-card p-5 pb-0">
                 <div className="relative aspect-[2/3] w-full max-w-[260px] overflow-hidden rounded-xl border bg-muted shadow-sm">
@@ -39,7 +44,8 @@ export default async function OfficersPage() {
                     <img
                       src={o.photo_url}
                       alt={o.name}
-                      className="absolute inset-0 size-full object-cover object-center"
+                      // object-top so faces stay in frame across portraits.
+                      className="absolute inset-0 size-full object-cover object-top"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-5xl font-bold text-primary/30">
@@ -55,15 +61,23 @@ export default async function OfficersPage() {
                   <p className="text-xs text-muted-foreground">{o.year}</p>
                 ) : null}
                 {o.bio ? (
-                  <p className="mt-3 text-sm text-foreground/85">{o.bio}</p>
+                  // Fixed-height scrollable bio so cards line up regardless of
+                  // length. Long bios still get a subtle scroll affordance.
+                  <p className="mt-3 max-h-32 overflow-y-auto pr-1 text-sm leading-relaxed text-foreground/85">
+                    {o.bio}
+                  </p>
                 ) : null}
                 {o.email ? (
-                  <a
-                    href={`mailto:${o.email}`}
-                    className="mt-4 text-sm text-primary underline-offset-4 hover:underline"
-                  >
-                    {o.email}
-                  </a>
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <a
+                      href={`mailto:${o.email}`}
+                      className="inline-flex items-center gap-2 rounded-md border border-[#500000]/30 bg-[#500000]/5 px-3 py-1.5 text-sm font-medium text-[#500000] transition-colors hover:bg-[#500000] hover:text-white"
+                      aria-label={`Email ${o.name}`}
+                    >
+                      <Mail className="size-3.5" />
+                      Contact
+                    </a>
+                  </div>
                 ) : null}
               </div>
             </article>

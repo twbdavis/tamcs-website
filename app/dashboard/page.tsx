@@ -6,7 +6,6 @@ import {
   isAdminOrAbove,
   isPresident,
 } from "@/lib/auth/roles";
-import { LogoutButton } from "@/components/auth/logout-button";
 import { createClient } from "@/lib/supabase/server";
 import { ScheduleCalendar } from "@/components/schedule-calendar";
 import { parseMonthParam } from "@/lib/schedule";
@@ -33,6 +32,13 @@ const TEAM_RESOURCES = [
     Icon: FileText,
   },
 ] as const;
+
+// Shared classNames keep the dashboard cards visually consistent.
+const CARD_CLASS =
+  "group rounded-lg border border-l-4 border-l-[#500000] bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-[#500000]";
+
+const SECTION_HEADING_CLASS =
+  "inline-block border-b-4 border-[#500000] pb-1 text-2xl font-semibold";
 
 export default async function DashboardPage({
   searchParams,
@@ -89,48 +95,37 @@ export default async function DashboardPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Welcome, {name}.</h1>
-          <p className="mt-2 text-muted-foreground">
-            Your role: <span className="font-medium text-foreground">{role}</span>
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {adminish ? (
-            <Link href="/admin" className={buttonVariants({ variant: "outline" })}>
-              Admin
-            </Link>
-          ) : null}
-          <LogoutButton />
-        </div>
+        <h1 className="text-3xl font-bold">Welcome, {name}</h1>
+        {adminish ? (
+          <Link
+            href="/admin"
+            className={buttonVariants({ variant: "outline" })}
+          >
+            Admin
+          </Link>
+        ) : null}
       </header>
 
-      <section className="mt-8">
+      <section className="mt-10">
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-2xl font-semibold">Team</h2>
+          <h2 className={SECTION_HEADING_CLASS}>Team</h2>
           {showSchedule ? (
             <span className="text-xs text-muted-foreground">
               What every athlete sees
             </span>
           ) : null}
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <Link
-            href="/dashboard/meets"
-            className="group rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-          >
-            <div className="font-semibold group-hover:text-primary">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <Link href="/dashboard/meets" className={CARD_CLASS}>
+            <div className="font-semibold group-hover:text-[#500000]">
               Upcoming meets →
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
               Travel info, signups, and heat-sheet attachments.
             </p>
           </Link>
-          <Link
-            href="/forms"
-            className="group rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-          >
-            <div className="font-semibold group-hover:text-primary">
+          <Link href="/forms" className={CARD_CLASS}>
+            <div className="font-semibold group-hover:text-[#500000]">
               Open forms →
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -143,13 +138,13 @@ export default async function DashboardPage({
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-start gap-4 rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
+              className={`${CARD_CLASS} flex items-start gap-4`}
             >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#500000]/10 text-[#500000]">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#500000]/10 text-[#500000] transition-colors group-hover:bg-[#500000] group-hover:text-white">
                 <Icon className="size-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="font-semibold group-hover:text-primary">
+                <div className="font-semibold group-hover:text-[#500000]">
                   {title} ↗
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -162,58 +157,43 @@ export default async function DashboardPage({
       </section>
 
       {showSchedule ? (
-        <section className="mt-10">
-          <h2 className="text-2xl font-semibold">Officer tools</h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <Link
-              href="/dashboard/availability"
-              className="group rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-            >
-              <div className="font-semibold group-hover:text-primary">
+        <section className="mt-12">
+          <h2 className={SECTION_HEADING_CLASS}>Officer tools</h2>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <Link href="/dashboard/availability" className={CARD_CLASS}>
+              <div className="font-semibold group-hover:text-[#500000]">
                 Officer availability →
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
                 Submit your weekly free blocks and see when everyone overlaps.
               </p>
             </Link>
-            <Link
-              href="/dashboard/invoice"
-              className="group rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-            >
-              <div className="font-semibold group-hover:text-primary">
+            <Link href="/dashboard/invoice" className={CARD_CLASS}>
+              <div className="font-semibold group-hover:text-[#500000]">
                 Invoice builder →
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
                 Generate a branded PDF invoice for sponsors and reimbursements.
               </p>
             </Link>
-            <Link
-              href="/admin/forms"
-              className="group rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-            >
-              <div className="font-semibold group-hover:text-primary">
+            <Link href="/admin/forms" className={CARD_CLASS}>
+              <div className="font-semibold group-hover:text-[#500000]">
                 Manage forms →
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
                 Create forms, publish them, and review responses.
               </p>
             </Link>
-            <Link
-              href="/dashboard/meets/manage"
-              className="group rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-            >
-              <div className="font-semibold group-hover:text-primary">
+            <Link href="/dashboard/meets/manage" className={CARD_CLASS}>
+              <div className="font-semibold group-hover:text-[#500000]">
                 Manage meets →
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
                 Build the upcoming-meets feed with travel and signup info.
               </p>
             </Link>
-            <Link
-              href="/dashboard/schedule"
-              className="group rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-            >
-              <div className="font-semibold group-hover:text-primary">
+            <Link href="/dashboard/schedule" className={CARD_CLASS}>
+              <div className="font-semibold group-hover:text-[#500000]">
                 Coaching schedule →
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -222,11 +202,8 @@ export default async function DashboardPage({
                   : "Browse every practice in a single Excel-like grid."}
               </p>
             </Link>
-            <Link
-              href="/dashboard/roster"
-              className="group rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
-            >
-              <div className="font-semibold group-hover:text-primary">
+            <Link href="/dashboard/roster" className={CARD_CLASS}>
+              <div className="font-semibold group-hover:text-[#500000]">
                 Roster information →
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -240,9 +217,9 @@ export default async function DashboardPage({
       ) : null}
 
       {showSchedule ? (
-        <section className="mt-10">
-          <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-2xl font-semibold">Coaching schedule</h2>
+        <section className="mt-12">
+          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className={SECTION_HEADING_CLASS}>Coaching schedule</h2>
             {president ? (
               <Link
                 href="/admin/schedule"

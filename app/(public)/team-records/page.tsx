@@ -43,8 +43,12 @@ export default async function TeamRecordsPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="mb-8">
-        <h1 className="text-4xl font-bold">Team Records</h1>
-        <p className="mt-2 text-muted-foreground">
+        <h1 className="text-4xl font-bold">
+          <span className="border-b-4 border-[#500000] pb-1">
+            Team Records
+          </span>
+        </h1>
+        <p className="mt-4 text-muted-foreground">
           All-time fastest times in TAMCS history.
         </p>
       </header>
@@ -55,22 +59,38 @@ export default async function TeamRecordsPage() {
         <div className="space-y-12">
           {sections.map(({ category, rows }) => (
             <section key={category}>
-              <h2 className="mb-4 text-2xl font-semibold">
-                {CATEGORY_LABELS[category]}
+              <h2 className="mb-4 inline-block text-3xl font-bold tracking-tight">
+                <span className="border-b-4 border-[#500000] pb-1">
+                  {CATEGORY_LABELS[category]}
+                </span>
               </h2>
-              <div className="overflow-hidden rounded-lg border">
+              <div className="overflow-hidden rounded-lg border-l-4 border-l-[#500000] border-y border-r shadow-sm">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-muted/40">
-                      <TableHead className="w-[28%]">Event</TableHead>
-                      <TableHead>Swimmer</TableHead>
-                      <TableHead className="w-[12%]">Year</TableHead>
-                      <TableHead className="w-[15%] text-right">Time</TableHead>
+                    <TableRow className="bg-[#500000] hover:bg-[#500000]">
+                      <TableHead className="w-[28%] text-white font-semibold">
+                        Event
+                      </TableHead>
+                      <TableHead className="text-white font-semibold">
+                        Swimmer
+                      </TableHead>
+                      <TableHead className="w-[12%] text-white font-semibold">
+                        Year
+                      </TableHead>
+                      <TableHead className="w-[15%] text-right text-white font-semibold">
+                        Time
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {rows.map((r) => (
-                      <TableRow key={r.id}>
+                    {rows.map((r, i) => (
+                      <TableRow
+                        key={r.id}
+                        className={
+                          (i % 2 === 0 ? "bg-background" : "bg-[#f9f9f9]") +
+                          " transition-colors hover:bg-[#500000]/5"
+                        }
+                      >
                         <TableCell className="font-medium">{r.event}</TableCell>
                         <TableCell className="whitespace-normal">
                           {r.swimmer_name}
