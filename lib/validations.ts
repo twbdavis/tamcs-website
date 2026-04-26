@@ -11,10 +11,19 @@ export const emailSchema = z.string().email("Enter a valid email address");
 export const TAMU_EMAIL_ERROR =
   "Only @tamu.edu email addresses can create an account";
 
-export const tamuEmailSchema = emailSchema.refine(
-  (e) => e.trim().toLowerCase().endsWith("@tamu.edu"),
-  { message: TAMU_EMAIL_ERROR },
-);
+export const SIGNUP_EMAIL_ALLOWLIST = ["twbdavis@gmail.com"];
+
+export function isAllowedSignupEmail(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return (
+    normalized.endsWith("@tamu.edu") ||
+    SIGNUP_EMAIL_ALLOWLIST.includes(normalized)
+  );
+}
+
+export const tamuEmailSchema = emailSchema.refine(isAllowedSignupEmail, {
+  message: TAMU_EMAIL_ERROR,
+});
 
 export const loginSchema = z.object({
   email: emailSchema,

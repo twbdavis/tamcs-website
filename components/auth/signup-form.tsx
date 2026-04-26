@@ -7,18 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signupAction } from "@/app/actions/auth";
-import { TAMU_EMAIL_ERROR } from "@/lib/validations";
-
-function isTamuEmail(value: string): boolean {
-  return value.trim().toLowerCase().endsWith("@tamu.edu");
-}
+import { TAMU_EMAIL_ERROR, isAllowedSignupEmail } from "@/lib/validations";
 
 export function SignupForm() {
   const [state, formAction, pending] = useActionState(signupAction, null);
   const [email, setEmail] = useState("");
   const [touched, setTouched] = useState(false);
 
-  const showEmailError = touched && email !== "" && !isTamuEmail(email);
+  const showEmailError = touched && email !== "" && !isAllowedSignupEmail(email);
 
   useEffect(() => {
     if (state?.error) toast.error(state.error);
@@ -31,7 +27,7 @@ export function SignupForm() {
       onSubmit={(e) => {
         // Server validation enforces this too; this just keeps users from
         // wasting a round-trip when the email is obviously wrong.
-        if (!isTamuEmail(email)) {
+        if (!isAllowedSignupEmail(email)) {
           e.preventDefault();
           setTouched(true);
           toast.error(TAMU_EMAIL_ERROR);
@@ -91,7 +87,7 @@ export function SignupForm() {
       </div>
       <Button
         type="submit"
-        disabled={pending || (touched && !isTamuEmail(email))}
+        disabled={pending || (touched && !isAllowedSignupEmail(email))}
         className="w-full"
       >
         {pending ? "Creating account…" : "Create account"}
