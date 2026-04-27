@@ -8,7 +8,11 @@ import {
   monthParam,
   shiftMonth,
 } from "@/lib/schedule";
-import type { Coach, CoachingScheduleEntry } from "@/lib/content-types";
+import type {
+  Coach,
+  CoachingScheduleEntry,
+  Social,
+} from "@/lib/content-types";
 
 const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -25,16 +29,26 @@ export function ScheduleCalendar({
   monthIndex0,
   entries,
   coachesByPractice,
+  socials = [],
 }: {
   basePath: string;
   year: number;
   monthIndex0: number;
   entries: CoachingScheduleEntry[];
   coachesByPractice: Map<string, Coach[]>;
+  socials?: Social[];
 }) {
   const grid = buildMonthGrid(year, monthIndex0);
   const occ = buildMonthOccurrences(entries, year, monthIndex0);
   const today = dateKey(new Date());
+
+  // Bucket socials into the same date keys the calendar uses.
+  const socialsByDate = new Map<string, Social[]>();
+  for (const s of socials) {
+    const list = socialsByDate.get(s.event_date) ?? [];
+    list.push(s);
+    socialsByDate.set(s.event_date, list);
+  }
 
   const prev = shiftMonth(year, monthIndex0, -1);
   const next = shiftMonth(year, monthIndex0, 1);
@@ -81,6 +95,7 @@ export function ScheduleCalendar({
             <div key={wi} className="grid grid-cols-7">
               {week.map((cell) => {
                 const sessions = occ.get(cell.key) ?? [];
+                const cellSocials = socialsByDate.get(cell.key) ?? [];
                 return (
                   <div
                     key={cell.key}
@@ -106,6 +121,33 @@ export function ScheduleCalendar({
                       </span>
                     </div>
                     <ul className="mt-1 space-y-1">
+                      {cellSocials.map((soc) => (
+                        <li
+                          key={`social-${soc.id}`}
+                          className="rounded border border-emerald-300/60 bg-emerald-50 p-1.5 text-[11px] leading-tight dark:bg-emerald-950/30"
+                        >
+                          <div className="flex items-center gap-1">
+                            <span
+                              className="size-1.5 rounded-full bg-emerald-600"
+                              aria-hidden
+                            />
+                            <span className="font-semibold">
+                              {soc.event_time
+                                ? formatTime(soc.event_time + ":00")
+                                : "Social"}
+                            </span>
+                            <span className="ml-auto rounded-full bg-emerald-600 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+                              Social
+                            </span>
+                          </div>
+                          <div className="truncate font-medium">{soc.title}</div>
+                          {soc.location ? (
+                            <div className="truncate text-muted-foreground">
+                              {soc.location}
+                            </div>
+                          ) : null}
+                        </li>
+                      ))}
                       {sessions.map((s) => {
                         const coaches = coachesByPractice.get(s.id) ?? [];
                         return (

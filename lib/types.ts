@@ -30,6 +30,13 @@ export type Profile = {
   class_year: ClassYear | null;
   uin: string | null;
   phone_number: string | null;
+  instagram_handle: string | null;
+  snapchat_handle: string | null;
+  linkedin_handle: string | null;
+  show_phone: boolean;
+  show_instagram: boolean;
+  show_snapchat: boolean;
+  show_linkedin: boolean;
   constitution_agreed: boolean;
   onboarding_completed: boolean;
   account_approved: boolean;

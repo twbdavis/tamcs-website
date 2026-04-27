@@ -211,6 +211,19 @@ export type WorkoutSetWithSections = WorkoutSet & {
   sections: WorkoutSection[];
 };
 
+export type Social = {
+  id: string;
+  title: string;
+  description: string | null;
+  event_date: string; // YYYY-MM-DD
+  event_time: string | null;
+  location: string | null;
+  created_by: string | null;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type AttendanceSemester = "Fall" | "Spring" | "Summer";
 
 export type AttendanceSession = {

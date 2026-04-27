@@ -114,6 +114,7 @@ export function OnboardingForm({
         </div>
       </div>
 
+
       <label className="flex items-start gap-2 rounded-lg border p-3 text-sm">
         <input
           type="checkbox"

@@ -15,8 +15,10 @@ import {
   ListChecks,
   Mail,
   Megaphone,
+  PartyPopper,
   PlusCircle,
   Receipt,
+  Settings,
   ShieldCheck,
   Trophy,
   UserCheck,
@@ -204,6 +206,24 @@ export default async function DashboardPage({
             Icon={UserCheck}
           />
           <DashCard
+            href="/dashboard/socials"
+            title="Socials"
+            description="Upcoming team hangouts, mixers, and events."
+            Icon={PartyPopper}
+          />
+          <DashCard
+            href="/dashboard/team-socials"
+            title="Team socials"
+            description="Teammate directory — Instagram and phone for anyone who's opted in."
+            Icon={Users}
+          />
+          <DashCard
+            href="/dashboard/settings"
+            title="Settings"
+            description="Update your phone number and social handles."
+            Icon={Settings}
+          />
+          <DashCard
             href="/docs/TAMCS_Constitution_2026-2027.docx.pdf"
             title="TAMCS Constitution"
             description="Team constitution and bylaws (2026-2027)."
@@ -265,6 +285,12 @@ export default async function DashboardPage({
               title="Manage announcements"
               description="Edit, publish, or manually create weekly updates."
               Icon={Megaphone}
+            />
+            <DashCard
+              href="/dashboard/socials/manage"
+              title="Plan a social"
+              description="Schedule team hangouts and publish them to athletes."
+              Icon={PartyPopper}
             />
             <DashCard
               href="/dashboard/schedule"

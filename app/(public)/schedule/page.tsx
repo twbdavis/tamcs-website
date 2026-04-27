@@ -5,6 +5,7 @@ import type {
   Coach,
   CoachAssignment,
   CoachingScheduleEntry,
+  Social,
 } from "@/lib/content-types";
 
 export const metadata = { title: "Schedule" };
@@ -22,6 +23,7 @@ export default async function SchedulePage({
     { data: entries },
     { data: coaches },
     { data: assignments },
+    { data: socials },
   ] = await Promise.all([
     supabase
       .from("coaching_schedule")
@@ -37,6 +39,12 @@ export default async function SchedulePage({
       .from("coaching_schedule_coaches")
       .select("*")
       .returns<CoachAssignment[]>(),
+    supabase
+      .from("socials")
+      .select("*")
+      .eq("is_published", true)
+      .order("event_date", { ascending: true })
+      .returns<Social[]>(),
   ]);
 
   const coachById = new Map<string, Coach>();
@@ -67,6 +75,7 @@ export default async function SchedulePage({
         monthIndex0={monthIndex0}
         entries={entries ?? []}
         coachesByPractice={coachesByPractice}
+        socials={socials ?? []}
       />
     </div>
   );
