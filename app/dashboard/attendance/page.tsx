@@ -2,18 +2,20 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireMinRole } from "@/lib/auth/require-role";
 import { AttendanceLogger } from "@/components/admin/attendance-logger";
-import { AttendanceHistory } from "@/components/admin/attendance-history";
+import {
+  AttendanceHistory,
+  type AthleteTotal,
+  type PeriodSummary,
+  type SessionSummary,
+} from "@/components/admin/attendance-history";
 import { recentAcademicYears } from "@/lib/attendance";
 import type { KnownAthlete } from "@/lib/attendance";
-import type {
-  AttendanceRecord,
-  AttendanceSemester,
-  AttendanceSession,
-} from "@/lib/content-types";
+import type { AttendanceSemester } from "@/lib/content-types";
 
 export const metadata = { title: "Attendance" };
 
 const SEMESTERS: AttendanceSemester[] = ["Fall", "Spring", "Summer"];
+const PAGE_SIZE = 20;
 
 type Tab = "log" | "history";
 
@@ -24,6 +26,7 @@ export default async function AttendancePage({
     tab?: string;
     semester?: string;
     year?: string;
+    page?: string;
   }>;
 }) {
   await requireMinRole("officer");
@@ -37,15 +40,22 @@ export default async function AttendancePage({
   const yearOptions = recentAcademicYears(4);
   const academicYear: string | "all" =
     sp.year && /^\d{4}-\d{4}$/.test(sp.year) ? sp.year : "all";
+  const pageParam = Number(sp.page);
+  const page =
+    Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
 
-  let sessions: AttendanceSession[] = [];
-  let records: AttendanceRecord[] = [];
   let knownAthletes: KnownAthlete[] = [];
+  let sessions: SessionSummary[] = [];
+  let totals: AthleteTotal[] = [];
+  let summary: PeriodSummary = {
+    session_count: 0,
+    total_records: 0,
+    unique_athletes: 0,
+  };
+  let hasMore = false;
+
   if (tab === "log") {
     const supabase = await createClient();
-    // Pull roster names so the sportclubs camelCase splitter can resolve
-    // multi-word last names ("MohAli" → "Moh-Ali", etc.). Officer-tier
-    // already passes RLS for /select on profiles.
     const { data } = await supabase
       .from("profiles")
       .select("first_name, last_name")
@@ -59,45 +69,71 @@ export default async function AttendancePage({
         last: p.last_name as string,
       }));
   }
+
   if (tab === "history") {
     const supabase = await createClient();
-    let q = supabase
-      .from("attendance_sessions")
-      .select("*")
-      .order("session_date", { ascending: false });
-    if (semester !== "all") q = q.eq("semester", semester);
-    if (academicYear !== "all") q = q.eq("academic_year", academicYear);
-    const { data: sessionRows } = await q.returns<AttendanceSession[]>();
-    sessions = sessionRows ?? [];
-    if (sessions.length > 0) {
-      const ids = sessions.map((s) => s.id);
-      // PostgREST defaults to a 1000-row cap. Chunk the IDs so each
-      // request stays under the cap (≈30 sessions × 50 athletes ≈ 1500
-      // worst case, but typical practices run 30-60). Always order so
-      // results are deterministic across runs.
-      const SESSIONS_PER_CHUNK = 25;
-      for (let i = 0; i < ids.length; i += SESSIONS_PER_CHUNK) {
-        const slice = ids.slice(i, i + SESSIONS_PER_CHUNK);
-        // Belt-and-suspenders pagination inside the chunk in case a
-        // single block of sessions still happens to clear 1000 rows.
-        const PAGE = 1000;
-        let offset = 0;
-        while (true) {
-          const { data: chunk } = await supabase
-            .from("attendance_records")
-            .select("*")
-            .in("session_id", slice)
-            .order("session_id", { ascending: true })
-            .order("id", { ascending: true })
-            .range(offset, offset + PAGE - 1)
-            .returns<AttendanceRecord[]>();
-          const got = chunk ?? [];
-          records.push(...got);
-          if (got.length < PAGE) break;
-          offset += PAGE;
-        }
-      }
-    }
+    const semParam = semester === "all" ? null : semester;
+    const yearParam = academicYear === "all" ? null : academicYear;
+    const offset = (page - 1) * PAGE_SIZE;
+
+    // Fetch one extra row to know whether there's a next page without
+    // running a separate count query.
+    const [sessionRes, totalsRes, summaryRes] = await Promise.all([
+      supabase.rpc("attendance_session_summaries", {
+        p_semester: semParam,
+        p_year: yearParam,
+        p_limit: PAGE_SIZE + 1,
+        p_offset: offset,
+      }),
+      supabase.rpc("attendance_athlete_totals", {
+        p_semester: semParam,
+        p_year: yearParam,
+      }),
+      supabase.rpc("attendance_period_summary", {
+        p_semester: semParam,
+        p_year: yearParam,
+      }),
+    ]);
+
+    const rawSessions =
+      (sessionRes.data as Array<{
+        id: string;
+        session_date: string;
+        title: string;
+        semester: AttendanceSemester;
+        academic_year: string;
+        participant_count: number;
+      }> | null) ?? [];
+    hasMore = rawSessions.length > PAGE_SIZE;
+    sessions = rawSessions.slice(0, PAGE_SIZE).map((s) => ({
+      id: s.id,
+      session_date: s.session_date,
+      title: s.title,
+      semester: s.semester,
+      academic_year: s.academic_year,
+      participant_count: Number(s.participant_count ?? 0),
+    }));
+
+    totals = ((totalsRes.data as Array<{
+      athlete_name: string;
+      uin_last4: string | null;
+      attendance_count: number;
+    }> | null) ?? []).map((t) => ({
+      athlete_name: t.athlete_name,
+      uin_last4: t.uin_last4,
+      attendance_count: Number(t.attendance_count ?? 0),
+    }));
+
+    const summaryRow = (summaryRes.data as Array<{
+      session_count: number;
+      total_records: number;
+      unique_athletes: number;
+    }> | null)?.[0];
+    summary = {
+      session_count: Number(summaryRow?.session_count ?? 0),
+      total_records: Number(summaryRow?.total_records ?? 0),
+      unique_athletes: Number(summaryRow?.unique_athletes ?? 0),
+    };
   }
 
   return (
@@ -134,10 +170,14 @@ export default async function AttendancePage({
         ) : (
           <AttendanceHistory
             sessions={sessions}
-            records={records}
+            totals={totals}
+            summary={summary}
             yearOptions={yearOptions}
             semester={semester}
             academicYear={academicYear}
+            page={page}
+            pageSize={PAGE_SIZE}
+            hasMore={hasMore}
           />
         )}
       </section>

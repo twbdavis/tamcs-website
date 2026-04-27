@@ -1,19 +1,50 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
   ATTENDANCE_MIN_PER_SEMESTER,
-  type AttendanceRecord,
   type AttendanceSemester,
-  type AttendanceSession,
 } from "@/lib/content-types";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { DeleteButton } from "@/components/admin/delete-button";
-import { deleteAttendanceSessionAction } from "@/app/actions/attendance";
-import { AttendanceCsvButtons } from "@/components/admin/attendance-csv-buttons";
+import {
+  deleteAttendanceSessionAction,
+  fetchSessionRecordsAction,
+} from "@/app/actions/attendance";
 
 const SEMESTERS: AttendanceSemester[] = ["Fall", "Spring", "Summer"];
 
+export type SessionSummary = {
+  id: string;
+  session_date: string;
+  title: string;
+  semester: AttendanceSemester;
+  academic_year: string;
+  participant_count: number;
+};
+
+export type AthleteTotal = {
+  athlete_name: string;
+  uin_last4: string | null;
+  attendance_count: number;
+};
+
+export type PeriodSummary = {
+  session_count: number;
+  total_records: number;
+  unique_athletes: number;
+};
+
+type SessionRecord = {
+  id: string;
+  athlete_name: string;
+  uin_last4: string | null;
+  is_restricted: boolean;
+};
+
 function formatDate(iso: string) {
-  // session_date is YYYY-MM-DD (no time); render in local-stable form.
   const [y, m, d] = iso.split("-").map(Number);
   if (!y || !m || !d) return iso;
   return new Date(y, m - 1, d).toLocaleDateString("en-US", {
@@ -24,66 +55,43 @@ function formatDate(iso: string) {
   });
 }
 
-function athleteKey(name: string, uin: string | null): string {
-  return `${name.trim().toLowerCase()}|${uin ?? ""}`;
-}
-
 export function AttendanceHistory({
   sessions,
-  records,
+  totals,
+  summary,
   yearOptions,
   semester,
   academicYear,
+  page,
+  pageSize,
+  hasMore,
   basePath = "/dashboard/attendance",
 }: {
-  sessions: AttendanceSession[];
-  records: AttendanceRecord[];
+  sessions: SessionSummary[];
+  totals: AthleteTotal[];
+  summary: PeriodSummary;
   yearOptions: string[];
   semester: AttendanceSemester | "all";
   academicYear: string | "all";
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
   basePath?: string;
 }) {
-  const recordsBySession = new Map<string, AttendanceRecord[]>();
-  for (const r of records) {
-    const list = recordsBySession.get(r.session_id) ?? [];
-    list.push(r);
-    recordsBySession.set(r.session_id, list);
-  }
-
-  // Per-athlete attendance totals across the filtered window.
-  const totals = new Map<
-    string,
-    { name: string; uin: string | null; count: number }
-  >();
-  for (const r of records) {
-    const key = athleteKey(r.athlete_name, r.uin_last4);
-    const existing = totals.get(key);
-    if (existing) existing.count++;
-    else
-      totals.set(key, {
-        name: r.athlete_name,
-        uin: r.uin_last4,
-        count: 1,
-      });
-  }
-  const totalsList = Array.from(totals.values()).sort(
-    (a, b) => b.count - a.count || a.name.localeCompare(b.name),
-  );
-  // Standard competition ranking: equal counts share a rank; the next
-  // distinct count picks up at (idx + 1) so ranks can skip (1, 2, 2, 4).
+  // Standard competition ranking: ties share a rank.
   const ranks: number[] = [];
-  for (let i = 0; i < totalsList.length; i++) {
-    if (i > 0 && totalsList[i].count === totalsList[i - 1].count) {
+  for (let i = 0; i < totals.length; i++) {
+    if (i > 0 && totals[i].attendance_count === totals[i - 1].attendance_count) {
       ranks.push(ranks[i - 1]);
     } else {
       ranks.push(i + 1);
     }
   }
 
-  const sessionCount = sessions.length;
-  const totalAttendances = records.length;
-  const avg = sessionCount === 0 ? 0 : totalAttendances / sessionCount;
-  const uniqueAthletes = totals.size;
+  const avg =
+    summary.session_count === 0
+      ? 0
+      : summary.total_records / summary.session_count;
 
   return (
     <div className="grid gap-6">
@@ -94,104 +102,43 @@ export function AttendanceHistory({
         basePath={basePath}
       />
 
-      <SummaryCards
-        sessions={sessionCount}
-        average={avg}
-        uniqueAthletes={uniqueAthletes}
-      />
-
-      <AttendanceCsvButtons sessions={sessions} records={records} />
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Stat label="Sessions logged" value={String(summary.session_count)} />
+        <Stat
+          label="Avg attendance / session"
+          value={summary.session_count === 0 ? "—" : avg.toFixed(1)}
+        />
+        <Stat
+          label="Unique athletes"
+          value={String(summary.unique_athletes)}
+        />
+      </div>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Sessions</h2>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-lg font-semibold">Sessions</h2>
+          <span className="text-xs text-muted-foreground">
+            Page {page} · {pageSize} per page
+          </span>
+        </div>
         {sessions.length === 0 ? (
           <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
             No sessions logged for this filter.
           </p>
         ) : (
           <div className="grid gap-3">
-            {sessions.map((s) => {
-              const rs = recordsBySession.get(s.id) ?? [];
-              return (
-                <details
-                  key={s.id}
-                  className="group rounded-lg border bg-card shadow-sm"
-                >
-                  <summary className="flex cursor-pointer items-center justify-between gap-4 px-5 py-4 marker:hidden [&::-webkit-details-marker]:hidden">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                        <h3 className="text-base font-semibold">{s.title}</h3>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(s.session_date)}
-                        </span>
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                          {s.semester} {s.academic_year}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {rs.length}{" "}
-                        {rs.length === 1 ? "athlete" : "athletes"} present
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/dashboard/attendance/${s.id}/edit`}
-                        className={buttonVariants({
-                          variant: "outline",
-                          size: "sm",
-                        })}
-                      >
-                        Edit
-                      </Link>
-                      <DeleteButton
-                        action={deleteAttendanceSessionAction}
-                        id={s.id}
-                        confirmMessage={`Delete this session and all ${rs.length} record${rs.length === 1 ? "" : "s"}?`}
-                      />
-                      <span
-                        aria-hidden
-                        className="text-xs text-muted-foreground transition-transform group-open:rotate-90"
-                      >
-                        ▶
-                      </span>
-                    </div>
-                  </summary>
-                  <div className="border-t px-5 py-4">
-                    {rs.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">No records.</p>
-                    ) : (
-                      <ul className="grid gap-1 text-sm sm:grid-cols-2">
-                        {rs
-                          .slice()
-                          .sort((a, b) =>
-                            a.athlete_name.localeCompare(b.athlete_name),
-                          )
-                          .map((r) => (
-                            <li
-                              key={r.id}
-                              className="flex items-center gap-2"
-                            >
-                              <span>{r.athlete_name}</span>
-                              {r.uin_last4 ? (
-                                <span className="font-mono text-xs text-muted-foreground">
-                                  ({r.uin_last4})
-                                </span>
-                              ) : null}
-                              {r.is_restricted ? (
-                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">
-                                  Restricted
-                                </span>
-                              ) : null}
-                            </li>
-                          ))}
-                      </ul>
-                    )}
-                  </div>
-                </details>
-              );
-            })}
+            {sessions.map((s) => (
+              <SessionRow key={s.id} session={s} />
+            ))}
           </div>
         )}
+        <Pagination
+          basePath={basePath}
+          semester={semester}
+          academicYear={academicYear}
+          page={page}
+          hasMore={hasMore}
+        />
       </section>
 
       <section>
@@ -204,7 +151,7 @@ export function AttendanceHistory({
             </span>
           ) : null}
         </h2>
-        {totalsList.length === 0 ? (
+        {totals.length === 0 ? (
           <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
             No athletes attended.
           </p>
@@ -221,28 +168,31 @@ export function AttendanceHistory({
                 </tr>
               </thead>
               <tbody>
-                {totalsList.map((t, idx) => {
-                  const meetsMinimum = t.count >= ATTENDANCE_MIN_PER_SEMESTER;
-                  const flagged = semester !== "all" && !meetsMinimum;
-                  const rank = ranks[idx];
+                {totals.map((t, idx) => {
+                  const meets =
+                    t.attendance_count >= ATTENDANCE_MIN_PER_SEMESTER;
+                  const flagged = semester !== "all" && !meets;
                   return (
-                    <tr key={`${t.name}|${t.uin ?? ""}`} className="border-t">
+                    <tr
+                      key={`${t.athlete_name}|${t.uin_last4 ?? ""}`}
+                      className="border-t"
+                    >
                       <td className="px-3 py-2 text-right font-mono text-xs text-muted-foreground">
-                        {rank}
+                        {ranks[idx]}
                       </td>
-                      <td className="px-3 py-2">{t.name}</td>
+                      <td className="px-3 py-2">{t.athlete_name}</td>
                       <td className="px-3 py-2 font-mono text-xs">
-                        {t.uin ?? "—"}
+                        {t.uin_last4 ?? "—"}
                       </td>
                       <td className="px-3 py-2 text-right font-semibold">
-                        {t.count}
+                        {t.attendance_count}
                       </td>
                       <td className="px-3 py-2">
                         {flagged ? (
                           <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-900">
                             Below minimum (&lt; {ATTENDANCE_MIN_PER_SEMESTER})
                           </span>
-                        ) : meetsMinimum ? (
+                        ) : meets ? (
                           <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-900">
                             Met minimum
                           </span>
@@ -260,6 +210,161 @@ export function AttendanceHistory({
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function SessionRow({ session: s }: { session: SessionSummary }) {
+  const [open, setOpen] = useState(false);
+  const [records, setRecords] = useState<SessionRecord[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [, startTransition] = useTransition();
+
+  function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    if (records !== null) {
+      setOpen(true);
+      return;
+    }
+    setLoading(true);
+    startTransition(async () => {
+      const res = await fetchSessionRecordsAction(s.id);
+      setLoading(false);
+      if ("error" in res) {
+        toast.error(res.error);
+        return;
+      }
+      setRecords(res.records);
+      setOpen(true);
+    });
+  }
+
+  return (
+    <div className="rounded-lg border bg-card shadow-sm">
+      <div className="flex items-center justify-between gap-4 px-5 py-4">
+        <button
+          type="button"
+          onClick={toggle}
+          className="min-w-0 flex-1 text-left"
+        >
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h3 className="text-base font-semibold">{s.title}</h3>
+            <span className="text-xs text-muted-foreground">
+              {formatDate(s.session_date)}
+            </span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+              {s.semester} {s.academic_year}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {s.participant_count}{" "}
+            {s.participant_count === 1 ? "athlete" : "athletes"} present
+          </p>
+        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/dashboard/attendance/${s.id}/edit`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Edit
+          </Link>
+          <DeleteButton
+            action={deleteAttendanceSessionAction}
+            id={s.id}
+            confirmMessage={`Delete this session and all ${s.participant_count} record${s.participant_count === 1 ? "" : "s"}?`}
+          />
+          <button
+            type="button"
+            aria-label={open ? "Collapse" : "Expand"}
+            onClick={toggle}
+            className="text-xs text-muted-foreground"
+          >
+            {open ? "▼" : "▶"}
+          </button>
+        </div>
+      </div>
+      {open ? (
+        <div className="border-t px-5 py-4">
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading records…</p>
+          ) : records === null ? null : records.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No records.</p>
+          ) : (
+            <ul className="grid gap-1 text-sm sm:grid-cols-2">
+              {records.map((r) => (
+                <li key={r.id} className="flex items-center gap-2">
+                  <span>{r.athlete_name}</span>
+                  {r.uin_last4 ? (
+                    <span className="font-mono text-xs text-muted-foreground">
+                      ({r.uin_last4})
+                    </span>
+                  ) : null}
+                  {r.is_restricted ? (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">
+                      Restricted
+                    </span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function Pagination({
+  basePath,
+  semester,
+  academicYear,
+  page,
+  hasMore,
+}: {
+  basePath: string;
+  semester: AttendanceSemester | "all";
+  academicYear: string | "all";
+  page: number;
+  hasMore: boolean;
+}) {
+  const linkFor = (p: number) => {
+    const params = new URLSearchParams();
+    params.set("tab", "history");
+    if (semester !== "all") params.set("semester", semester);
+    if (academicYear !== "all") params.set("year", academicYear);
+    if (p > 1) params.set("page", String(p));
+    return `${basePath}?${params.toString()}`;
+  };
+  if (page === 1 && !hasMore) return null;
+  return (
+    <div className="mt-4 flex items-center justify-end gap-2">
+      {page > 1 ? (
+        <Link
+          href={linkFor(page - 1)}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          ← Prev
+        </Link>
+      ) : (
+        <Button variant="outline" size="sm" disabled>
+          ← Prev
+        </Button>
+      )}
+      {hasMore ? (
+        <Link
+          href={linkFor(page + 1)}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          Next →
+        </Link>
+      ) : (
+        <Button variant="outline" size="sm" disabled>
+          Next →
+        </Button>
+      )}
     </div>
   );
 }
@@ -349,27 +454,6 @@ function FilterChip({
     >
       {label}
     </Link>
-  );
-}
-
-function SummaryCards({
-  sessions,
-  average,
-  uniqueAthletes,
-}: {
-  sessions: number;
-  average: number;
-  uniqueAthletes: number;
-}) {
-  return (
-    <div className="grid gap-3 sm:grid-cols-3">
-      <Stat label="Sessions logged" value={String(sessions)} />
-      <Stat
-        label="Avg attendance / session"
-        value={sessions === 0 ? "—" : average.toFixed(1)}
-      />
-      <Stat label="Unique athletes" value={String(uniqueAthletes)} />
-    </div>
   );
 }
 

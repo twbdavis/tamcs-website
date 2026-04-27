@@ -306,6 +306,40 @@ export async function addAttendanceRecordsAction(
   };
 }
 
+export async function fetchSessionRecordsAction(
+  sessionId: string,
+): Promise<
+  | { error: string }
+  | {
+      records: {
+        id: string;
+        athlete_name: string;
+        uin_last4: string | null;
+        is_restricted: boolean;
+      }[];
+    }
+> {
+  const auth = await getAuthedClient("officer");
+  if ("error" in auth) return { error: auth.error };
+  if (typeof sessionId !== "string" || sessionId.length === 0) {
+    return { error: "Missing session id" };
+  }
+  const { data, error } = await auth.supabase
+    .from("attendance_records")
+    .select("id, athlete_name, uin_last4, is_restricted")
+    .eq("session_id", sessionId)
+    .order("athlete_name", { ascending: true });
+  if (error) return { error: error.message };
+  return {
+    records: (data ?? []).map((r) => ({
+      id: String(r.id),
+      athlete_name: String(r.athlete_name ?? ""),
+      uin_last4: r.uin_last4 == null ? null : String(r.uin_last4),
+      is_restricted: !!r.is_restricted,
+    })),
+  };
+}
+
 export async function deleteAttendanceSessionAction(
   formData: FormData,
 ): Promise<void> {
