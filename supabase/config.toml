@@ -1,0 +1,15 @@
+# supabase/config.toml
+# Per-function settings. The CLI reads this on `supabase functions deploy`.
+
+[functions.ingest-email]
+# Public webhook endpoint: external callers (Google Apps Script, mail
+# providers, etc.) can't attach a Supabase JWT, so we authenticate via the
+# `secret` field in the request body instead. The function uses the
+# service-role key internally to insert into weekly_announcements.
+verify_jwt = false
+
+[functions.ingest-attendance]
+# Same pattern as ingest-email: external scrapers / Apps Script bound to
+# sportclubs.tamu.edu post here without an Authorization header.
+# Authentication is via the `secret` field in the JSON body.
+verify_jwt = false

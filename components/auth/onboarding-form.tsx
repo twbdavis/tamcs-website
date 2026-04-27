@@ -82,20 +82,36 @@ export function OnboardingForm({
         </div>
       </div>
 
-      <div className="grid gap-1.5">
-        <Label htmlFor="uin">UIN</Label>
-        <Input
-          id="uin"
-          name="uin"
-          required
-          inputMode="numeric"
-          pattern="\d{9}"
-          maxLength={9}
-          placeholder="123456789"
-        />
-        <p className="text-xs text-muted-foreground">
-          Your nine-digit Texas A&amp;M Universal Identification Number.
-        </p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid gap-1.5">
+          <Label htmlFor="uin">UIN</Label>
+          <Input
+            id="uin"
+            name="uin"
+            required
+            inputMode="numeric"
+            pattern="\d{9}"
+            maxLength={9}
+            placeholder="123456789"
+          />
+          <p className="text-xs text-muted-foreground">
+            Your nine-digit Texas A&amp;M Universal Identification Number.
+          </p>
+        </div>
+        <div className="grid gap-1.5">
+          <Label htmlFor="phone_number">Phone number</Label>
+          <Input
+            id="phone_number"
+            name="phone_number"
+            type="tel"
+            required
+            inputMode="tel"
+            placeholder="(979) 555-0100"
+          />
+          <p className="text-xs text-muted-foreground">
+            For team communication.
+          </p>
+        </div>
       </div>
 
       <label className="flex items-start gap-2 rounded-lg border p-3 text-sm">

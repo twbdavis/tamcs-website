@@ -7,10 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { upsertMeetAction } from "@/app/actions/meets";
 import { AttachmentsEditor } from "@/components/admin/attachments-editor";
-import type { Meet } from "@/lib/content-types";
+import type { Form, Meet } from "@/lib/content-types";
 
 const TEXTAREA_CLASS =
   "w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+
+const SELECT_CLASS =
+  "h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 function toLocalDatetimeInput(iso: string | null | undefined): string {
   if (!iso) return "";
@@ -23,7 +26,13 @@ function toLocalDatetimeInput(iso: string | null | undefined): string {
   );
 }
 
-export function MeetForm({ meet }: { meet?: Meet }) {
+export function MeetForm({
+  meet,
+  forms = [],
+}: {
+  meet?: Meet;
+  forms?: Form[];
+}) {
   const [state, formAction, pending] = useActionState(upsertMeetAction, null);
 
   useEffect(() => {
@@ -83,14 +92,25 @@ export function MeetForm({ meet }: { meet?: Meet }) {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="grid gap-1.5">
-          <Label htmlFor="signup_url">Signup URL</Label>
-          <Input
-            id="signup_url"
-            name="signup_url"
-            type="url"
-            defaultValue={meet?.signup_url ?? ""}
-            placeholder="https://forms.gle/…"
-          />
+          <Label htmlFor="signup_form_id">Signup form (team)</Label>
+          <select
+            id="signup_form_id"
+            name="signup_form_id"
+            defaultValue={meet?.signup_form_id ?? ""}
+            className={SELECT_CLASS}
+          >
+            <option value="">— None —</option>
+            {forms.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.title}
+                {f.is_published ? "" : " (draft)"}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground">
+            Pick a form built in Manage forms. Takes precedence over the URL
+            below.
+          </p>
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="signup_deadline">Signup deadline</Label>
@@ -101,6 +121,20 @@ export function MeetForm({ meet }: { meet?: Meet }) {
             defaultValue={toLocalDatetimeInput(meet?.signup_deadline)}
           />
         </div>
+      </div>
+
+      <div className="grid gap-1.5">
+        <Label htmlFor="signup_url">Signup URL (external)</Label>
+        <Input
+          id="signup_url"
+          name="signup_url"
+          type="url"
+          defaultValue={meet?.signup_url ?? ""}
+          placeholder="https://forms.gle/…"
+        />
+        <p className="text-xs text-muted-foreground">
+          Used only when no team form is selected above.
+        </p>
       </div>
 
       <div className="grid gap-1.5">

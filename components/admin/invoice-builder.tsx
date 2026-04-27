@@ -46,6 +46,42 @@ function formatDate(d: Date): string {
   });
 }
 
+// Load an image from /public and re-encode it through a canvas so jsPDF
+// gets a normalized PNG byte stream. Some browsers/jsPDF builds choke on
+// the IDAT chunks of perfectly-valid source PNGs ("CRC mismatch for chunk
+// IDAT"); round-tripping through canvas avoids that entirely. Returns
+// null on any failure (network, decode, taint) so the caller can fall
+// back to the text mark.
+async function loadLogoForPdf(
+  src: string,
+): Promise<{ dataUrl: string; width: number; height: number } | null> {
+  try {
+    const img = await new Promise<HTMLImageElement | null>((resolve) => {
+      const el = new Image();
+      el.crossOrigin = "anonymous";
+      el.onload = () => resolve(el);
+      el.onerror = () => resolve(null);
+      el.src = src;
+    });
+    if (!img) return null;
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+    if (!w || !h) return null;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, 0);
+    const dataUrl = canvas.toDataURL("image/png");
+    if (!dataUrl.startsWith("data:image/png")) return null;
+    return { dataUrl, width: w, height: h };
+  } catch {
+    return null;
+  }
+}
+
 export function InvoiceBuilder() {
   const [recipientName, setRecipientName] = useState("");
   const [includeAddress, setIncludeAddress] = useState(false);
@@ -103,17 +139,38 @@ export function InvoiceBuilder() {
       const cardX = margin + logoW + gap;
       const cardW = pageW - margin - cardX;
 
-      // Logo: block "A&M" with "CLUB SWIMMING" subtitle, vertically centered
-      const logoCx = margin + logoW / 2;
-      const logoCy = topY + topH / 2;
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...MAROON);
-      doc.setFontSize(60);
-      doc.text("A&M", logoCx, logoCy, { align: "center" });
-      doc.setFontSize(11);
-      doc.setCharSpace(2);
-      doc.text("CLUB SWIMMING", logoCx, logoCy + 26, { align: "center" });
-      doc.setCharSpace(0);
+      // Real logo image, centered in the logo area. Falls back to a text
+      // mark if the asset can't be loaded or jsPDF rejects the byte
+      // stream (e.g. "CRC mismatch for chunk IDAT").
+      const logo = await loadLogoForPdf("/images/block-logo-maroon.png");
+      let logoRendered = false;
+      if (logo) {
+        try {
+          const box = 130;
+          const ratio = logo.width / logo.height || 1;
+          const w = ratio >= 1 ? box : box * ratio;
+          const h = ratio >= 1 ? box / ratio : box;
+          const ix = margin + (logoW - w) / 2;
+          const iy = topY + (topH - h) / 2;
+          doc.addImage(logo.dataUrl, "PNG", ix, iy, w, h);
+          logoRendered = true;
+        } catch (e) {
+          // Fall through to text fallback below.
+          console.warn("Logo embed failed, using text fallback:", e);
+        }
+      }
+      if (!logoRendered) {
+        const logoCx = margin + logoW / 2;
+        const logoCy = topY + topH / 2;
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...MAROON);
+        doc.setFontSize(28);
+        doc.text("TEXAS A&M", logoCx, logoCy - 10, { align: "center" });
+        doc.setFontSize(14);
+        doc.setCharSpace(2);
+        doc.text("CLUB SWIMMING", logoCx, logoCy + 14, { align: "center" });
+        doc.setCharSpace(0);
+      }
 
       // Summary card — white with maroon top header strip
       const summaryHeaderH = 44;

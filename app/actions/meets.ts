@@ -65,12 +65,27 @@ export async function upsertMeetAction(
     const is_published =
       publishedRaw === "on" || publishedRaw === "true";
 
+    const signup_form_id_raw = nullable(formData.get("signup_form_id"));
+    // UUID shape check; reject anything that isn't a plausible id.
+    let signup_form_id: string | null = null;
+    if (signup_form_id_raw) {
+      if (
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          signup_form_id_raw,
+        )
+      ) {
+        return { error: "Signup form id must be a valid UUID" };
+      }
+      signup_form_id = signup_form_id_raw;
+    }
+
     payload = {
       title: required(formData.get("title"), "Title"),
       meet_date,
       location: required(formData.get("location"), "Location"),
       description: nullable(formData.get("description")),
       signup_url: nullable(formData.get("signup_url")),
+      signup_form_id,
       signup_deadline,
       travel_info: nullable(formData.get("travel_info")),
       warmup_time: nullable(formData.get("warmup_time")),

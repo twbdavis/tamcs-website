@@ -81,7 +81,6 @@ const STEPS = [
 const TRYOUT_CUTS = [
   { event: "50 Free", men: "30.09", women: "35.09" },
   { event: "100 Free", men: "1:06.49", women: "1:17.49" },
-  { event: "200 Free", men: "2:28.99", women: "2:51.99" },
   { event: "50 Back", men: "35.79", women: "40.65" },
   { event: "100 Back", men: "1:16.99", women: "1:27.99" },
   { event: "50 Breast", men: "38.39", women: "46.29" },
@@ -89,7 +88,6 @@ const TRYOUT_CUTS = [
   { event: "50 Fly", men: "32.99", women: "38.29" },
   { event: "100 Fly", men: "1:13.99", women: "1:26.69" },
   { event: "100 IM", men: "1:14.99", women: "1:28.39" },
-  { event: "200 IM", men: "2:49.99", women: "3:17.99" },
 ];
 
 const EXPECTATIONS = [
@@ -102,7 +100,7 @@ const EXPECTATIONS = [
 const POLICIES = [
   { label: "Practice", value: "6 per semester minimum" },
   { label: "Meets", value: "1 per semester minimum" },
-  { label: "Volunteer", value: "1 opportunity per year" },
+  { label: "Volunteer", value: "1 opportunity per semester" },
 ];
 
 const HEADING_ACCENT =
@@ -202,7 +200,7 @@ export default function JoinUsPage() {
               The Set
             </p>
             <p className="mt-2 text-lg font-semibold text-foreground">
-              4 × 100 freestyle on 1:45
+              5 × 100 freestyle on 1:45
             </p>
             <p className="text-lg font-semibold text-foreground">
               4 × 50 IMO on 1:15
@@ -300,7 +298,7 @@ export default function JoinUsPage() {
                   Full year
                 </div>
                 <div className="mt-2 text-4xl font-extrabold text-[#500000]">
-                  $200
+                  $220
                 </div>
               </div>
               <div className="p-6 text-center">
@@ -308,10 +306,14 @@ export default function JoinUsPage() {
                   Per semester
                 </div>
                 <div className="mt-2 text-4xl font-extrabold text-[#500000]">
-                  $125
+                  $130
                 </div>
               </div>
             </div>
+
+            <p className="border-t border-[#500000]/20 bg-[#500000]/5 px-6 py-3 text-center text-xs font-medium text-[#500000]">
+              Nationals athletes must pay full year dues.
+            </p>
 
             <div className="border-t border-[#500000]/20 bg-muted/20 p-6">
               <div className="text-xs font-semibold uppercase tracking-widest text-[#500000]">

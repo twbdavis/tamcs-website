@@ -48,6 +48,11 @@ export async function completeOnboardingAction(
     if (!/^\d{9}$/.test(uin)) {
       return { error: "UIN must be exactly 9 digits" };
     }
+    const phone_number = required(formData.get("phone_number"), "Phone number");
+    const phoneDigits = phone_number.replace(/\D/g, "");
+    if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+      return { error: "Phone number must be 7–15 digits" };
+    }
     const constitution = formData.get("constitution_agreed");
     if (constitution !== "on" && constitution !== "true") {
       return {
@@ -61,6 +66,7 @@ export async function completeOnboardingAction(
       birthday,
       class_year,
       uin,
+      phone_number,
       constitution_agreed: true,
       onboarding_completed: true,
       // Keep full_name in sync so other UI (officer page, dropdowns) is correct.
@@ -100,5 +106,7 @@ export async function completeOnboardingAction(
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/roster");
-  redirect("/dashboard");
+  // New athlete signups land on /pending until an officer approves them;
+  // the middleware will keep redirecting until account_approved flips.
+  redirect("/pending");
 }

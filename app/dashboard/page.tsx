@@ -1,5 +1,28 @@
 import Link from "next/link";
-import { FolderOpen, FileText, Download } from "lucide-react";
+import {
+  Award,
+  CalendarClock,
+  CalendarDays,
+  Camera,
+  CheckSquare,
+  ClipboardCheck,
+  ClipboardList,
+  Download,
+  Dumbbell,
+  FileEdit,
+  FileText,
+  FolderOpen,
+  ListChecks,
+  Mail,
+  Megaphone,
+  PlusCircle,
+  Receipt,
+  ShieldCheck,
+  Trophy,
+  UserCheck,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { requireUser } from "@/lib/auth/require-role";
 import {
   hasRoleAtLeast,
@@ -18,27 +41,66 @@ import { buttonVariants } from "@/components/ui/button";
 
 export const metadata = { title: "Dashboard" };
 
-const TEAM_RESOURCES = [
-  {
-    title: "Meet Information",
-    description: "Travel details, heat sheets, and meet schedules",
-    href: "https://drive.google.com/drive/folders/1s62XldF37lyjmmT3ocILR8yZczy18pxx",
-    Icon: FolderOpen,
-  },
-  {
-    title: "TAMCS Constitution",
-    description: "Team constitution and bylaws (2026-2027)",
-    href: "/docs/TAMCS_Constitution_2026-2027.docx.pdf",
-    Icon: FileText,
-  },
-] as const;
-
-// Shared classNames keep the dashboard cards visually consistent.
 const CARD_CLASS =
-  "group rounded-lg border border-l-4 border-l-[#500000] bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-[#500000]";
+  "group flex items-start gap-4 rounded-lg border border-l-4 border-l-[#500000] bg-card p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-[#500000]";
+
+const ICON_TILE_CLASS =
+  "flex size-10 shrink-0 items-center justify-center rounded-md bg-[#500000]/10 text-[#500000] transition-colors group-hover:bg-[#500000] group-hover:text-white";
 
 const SECTION_HEADING_CLASS =
   "inline-block border-b-4 border-[#500000] pb-1 text-2xl font-semibold";
+
+type DashCardProps = {
+  href: string;
+  title: string;
+  description: string;
+  Icon: LucideIcon;
+  external?: boolean;
+  download?: boolean;
+};
+
+function DashCard({
+  href,
+  title,
+  description,
+  Icon,
+  external,
+  download,
+}: DashCardProps) {
+  const arrow = download ? "↓" : external ? "↗" : "→";
+  const body = (
+    <>
+      <span className={ICON_TILE_CLASS}>
+        <Icon className="size-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="font-semibold group-hover:text-[#500000]">
+          {title} {arrow}
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      </div>
+    </>
+  );
+  if (external || download) {
+    return (
+      <a
+        href={href}
+        className={CARD_CLASS}
+        {...(external
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : {})}
+        {...(download ? { download: true } : {})}
+      >
+        {body}
+      </a>
+    );
+  }
+  return (
+    <Link href={href} className={CARD_CLASS}>
+      {body}
+    </Link>
+  );
+}
 
 export default async function DashboardPage({
   searchParams,
@@ -53,6 +115,7 @@ export default async function DashboardPage({
   const showSchedule = hasRoleAtLeast(role, "officer");
   const president = isPresident(role);
   const adminish = isAdminOrAbove(role);
+  const isCoach = role === "coach";
 
   let entries: CoachingScheduleEntry[] = [];
   let coachesByPractice = new Map<string, Coach[]>();
@@ -99,60 +162,61 @@ export default async function DashboardPage({
         {adminish ? (
           <Link
             href="/admin"
-            className={buttonVariants({ variant: "outline" })}
+            className={`${buttonVariants({ size: "sm" })} gap-2`}
           >
-            Admin
+            <ShieldCheck className="size-4" />
+            Admin tools
           </Link>
         ) : null}
       </header>
 
       <section className="mt-10">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className={SECTION_HEADING_CLASS}>Team</h2>
-          {showSchedule ? (
-            <span className="text-xs text-muted-foreground">
-              What every athlete sees
-            </span>
-          ) : null}
-        </div>
+        <h2 className={SECTION_HEADING_CLASS}>Team</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <Link href="/dashboard/meets" className={CARD_CLASS}>
-            <div className="font-semibold group-hover:text-[#500000]">
-              Upcoming meets →
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Travel info, signups, and heat-sheet attachments.
-            </p>
-          </Link>
-          <Link href="/forms" className={CARD_CLASS}>
-            <div className="font-semibold group-hover:text-[#500000]">
-              Open forms →
-            </div>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Submit RSVPs, sign-ups, and team feedback.
-            </p>
-          </Link>
-          {TEAM_RESOURCES.map(({ title, description, href, Icon }) => (
-            <a
-              key={title}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${CARD_CLASS} flex items-start gap-4`}
-            >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#500000]/10 text-[#500000] transition-colors group-hover:bg-[#500000] group-hover:text-white">
-                <Icon className="size-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold group-hover:text-[#500000]">
-                  {title} ↗
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {description}
-                </p>
-              </div>
-            </a>
-          ))}
+          <DashCard
+            href="/dashboard/meets"
+            title="Meet Information"
+            description="Travel details, heat sheets, signups, and meet schedules."
+            Icon={FolderOpen}
+          />
+          <DashCard
+            href="/forms"
+            title="Open forms"
+            description="Submit RSVPs, sign-ups, and team feedback."
+            Icon={ClipboardList}
+          />
+          <DashCard
+            href="/dashboard/announcements"
+            title="Weekly announcements"
+            description="Newest first — the latest team-wide updates."
+            Icon={Megaphone}
+          />
+          <DashCard
+            href="/dashboard/ccs"
+            title="CCS Resources"
+            description="College Club Swimming registration instructions and links."
+            Icon={Award}
+          />
+          <DashCard
+            href="/dashboard/my-attendance"
+            title="My attendance"
+            description="Your practice attendance for the current semester."
+            Icon={UserCheck}
+          />
+          <DashCard
+            href="/docs/TAMCS_Constitution_2026-2027.docx.pdf"
+            title="TAMCS Constitution"
+            description="Team constitution and bylaws (2026-2027)."
+            Icon={FileText}
+            external
+          />
+          <DashCard
+            href="https://join.photocircleapp.com/QBRE0EEQMX"
+            title="Team Photos"
+            description="Share and view team photos on PhotoCircle."
+            Icon={Camera}
+            external
+          />
         </div>
       </section>
 
@@ -160,75 +224,113 @@ export default async function DashboardPage({
         <section className="mt-12">
           <h2 className={SECTION_HEADING_CLASS}>Officer tools</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <Link href="/dashboard/availability" className={CARD_CLASS}>
-              <div className="font-semibold group-hover:text-[#500000]">
-                Officer availability →
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Submit your weekly free blocks and see when everyone overlaps.
-              </p>
-            </Link>
-            <Link href="/dashboard/invoice" className={CARD_CLASS}>
-              <div className="font-semibold group-hover:text-[#500000]">
-                Invoice builder →
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Generate a branded PDF invoice for sponsors and reimbursements.
-              </p>
-            </Link>
-            <Link href="/admin/forms" className={CARD_CLASS}>
-              <div className="font-semibold group-hover:text-[#500000]">
-                Manage forms →
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Create forms, publish them, and review responses.
-              </p>
-            </Link>
-            <Link href="/dashboard/meets/manage" className={CARD_CLASS}>
-              <div className="font-semibold group-hover:text-[#500000]">
-                Manage meets →
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Build the upcoming-meets feed with travel and signup info.
-              </p>
-            </Link>
-            <Link href="/dashboard/schedule" className={CARD_CLASS}>
-              <div className="font-semibold group-hover:text-[#500000]">
-                Coaching schedule →
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {president
+            <DashCard
+              href="/dashboard/availability"
+              title="Officer availability"
+              description="Submit your weekly free blocks and see when everyone overlaps."
+              Icon={CalendarClock}
+            />
+            <DashCard
+              href="/dashboard/invoice"
+              title="Invoice builder"
+              description="Generate a branded PDF invoice for sponsors and reimbursements."
+              Icon={Receipt}
+            />
+            <DashCard
+              href="/admin/forms"
+              title="Manage forms"
+              description="Create forms, publish them, and review responses."
+              Icon={FileEdit}
+            />
+            <DashCard
+              href="/dashboard/meets/manage"
+              title="Manage meets"
+              description="Build the upcoming-meets feed with travel and signup info."
+              Icon={Trophy}
+            />
+            <DashCard
+              href="/dashboard/workouts/review"
+              title="Review workout sets"
+              description="Approve or deny coach-submitted sets before they hit the bank."
+              Icon={ClipboardCheck}
+            />
+            <DashCard
+              href="/dashboard/workouts/bank"
+              title="Workout bank"
+              description="Browse every approved set from the coaching staff."
+              Icon={Dumbbell}
+            />
+            <DashCard
+              href="/dashboard/announcements/manage"
+              title="Manage announcements"
+              description="Edit, publish, or manually create weekly updates."
+              Icon={Megaphone}
+            />
+            <DashCard
+              href="/dashboard/schedule"
+              title="Coaching schedule"
+              description={
+                president
                   ? "Edit all practices in a single Excel-like grid."
-                  : "Browse every practice in a single Excel-like grid."}
-              </p>
-            </Link>
-            <Link href="/dashboard/roster" className={CARD_CLASS}>
-              <div className="font-semibold group-hover:text-[#500000]">
-                Roster information →
-              </div>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {adminish
+                  : "Browse every practice in a single Excel-like grid."
+              }
+              Icon={CalendarDays}
+            />
+            <DashCard
+              href="/dashboard/attendance"
+              title="Attendance"
+              description="Log practice roll-call and review per-athlete attendance totals."
+              Icon={CheckSquare}
+            />
+            <DashCard
+              href="/dashboard/email-list"
+              title="Email list"
+              description="Spreadsheet of every contact — search, edit inline, copy active emails."
+              Icon={Mail}
+            />
+            <DashCard
+              href="/dashboard/roster"
+              title="Roster information"
+              description={
+                adminish
                   ? "Search, sort, manage roles, and export the team to CSV."
-                  : "Search and sort the team roster (read-only)."}
-              </p>
-            </Link>
-            <a
+                  : "Search and sort the team roster (read-only)."
+              }
+              Icon={Users}
+            />
+            <DashCard
               href="/downloads/FinanceToolSwim.exe"
+              title="Finance Tool"
+              description="Download the TAMCS finance management application (Windows)."
+              Icon={Download}
               download
-              className={`${CARD_CLASS} flex items-start gap-4`}
-            >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-[#500000]/10 text-[#500000] transition-colors group-hover:bg-[#500000] group-hover:text-white">
-                <Download className="size-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold group-hover:text-[#500000]">
-                  Finance Tool ↓
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Download the TAMCS finance management application (Windows).
-                </p>
-              </div>
-            </a>
+            />
+          </div>
+        </section>
+      ) : null}
+
+      {isCoach ? (
+        <section className="mt-12">
+          <h2 className={SECTION_HEADING_CLASS}>Workouts</h2>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <DashCard
+              href="/dashboard/workouts/create"
+              title="Create set"
+              description="Build a new workout set and submit it for officer review."
+              Icon={PlusCircle}
+            />
+            <DashCard
+              href="/dashboard/workouts/mine"
+              title="My submissions"
+              description="Track the status of your pending, approved, and denied sets."
+              Icon={ListChecks}
+            />
+            <DashCard
+              href="/dashboard/workouts/bank"
+              title="Workout bank"
+              description="Browse every approved set from the coaching staff."
+              Icon={Dumbbell}
+            />
           </div>
         </section>
       ) : null}

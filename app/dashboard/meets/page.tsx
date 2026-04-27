@@ -143,15 +143,22 @@ function MeetCard({
           </Detail>
         ) : null}
 
-        {meet.signup_url ? (
+        {meet.signup_form_id || meet.signup_url ? (
           <Detail label="Signup">
             {completed || deadlinePassed ? (
               <span className="inline-flex items-center rounded-md border px-3 py-1 text-xs font-medium text-muted-foreground">
                 Signup closed
               </span>
+            ) : meet.signup_form_id ? (
+              <Link
+                href={`/forms/${meet.signup_form_id}`}
+                className={buttonVariants({ size: "sm" })}
+              >
+                Sign up →
+              </Link>
             ) : (
               <a
-                href={meet.signup_url}
+                href={meet.signup_url!}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={buttonVariants({ size: "sm" })}

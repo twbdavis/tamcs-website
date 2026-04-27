@@ -151,6 +151,7 @@ export type Meet = {
   location: string;
   description: string | null;
   signup_url: string | null;
+  signup_form_id: string | null;
   signup_deadline: string | null; // ISO timestamp
   travel_info: string | null;
   warmup_time: string | null;
@@ -172,5 +173,129 @@ export type MeetResult = {
   notes: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type WorkoutSetStatus = "pending" | "approved" | "denied";
+
+export type WorkoutSectionType =
+  | "warmup"
+  | "preset"
+  | "kick"
+  | "pull"
+  | "main"
+  | "sprint";
+
+export type WorkoutSection = {
+  id: string;
+  set_id: string;
+  section_type: WorkoutSectionType;
+  display_order: number;
+  content: string;
+  total_yardage: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type WorkoutSet = {
+  id: string;
+  title: string;
+  created_by: string;
+  status: WorkoutSetStatus;
+  reviewer_id: string | null;
+  review_comment: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type WorkoutSetWithSections = WorkoutSet & {
+  sections: WorkoutSection[];
+};
+
+export type AttendanceSemester = "Fall" | "Spring" | "Summer";
+
+export type AttendanceSession = {
+  id: string;
+  session_date: string; // YYYY-MM-DD
+  title: string;
+  semester: AttendanceSemester;
+  academic_year: string; // e.g. "2025-2026"
+  created_by: string | null;
+  created_at: string;
+};
+
+export type AttendanceRecord = {
+  id: string;
+  session_id: string;
+  athlete_name: string;
+  uin_last4: string | null;
+  is_restricted: boolean;
+  created_at: string;
+};
+
+// Minimum practices required per the team's policy (Join Us page).
+export const ATTENDANCE_MIN_PER_SEMESTER = 6;
+
+export type EmailListCategory =
+  | "athlete"
+  | "officer"
+  | "coach"
+  | "other";
+
+export type EmailListDuesType = "full_year" | "semester";
+
+export type EmailListEntry = {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  category: EmailListCategory;
+  is_active: boolean;
+  dues_type: EmailListDuesType | null;
+  dues_paid: boolean;
+  added_by: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export const EMAIL_LIST_CATEGORIES: EmailListCategory[] = [
+  "athlete",
+  "officer",
+  "coach",
+  "other",
+];
+
+export type WeeklyAnnouncement = {
+  id: string;
+  subject: string;
+  body: string;
+  body_html: string | null;
+  sender: string | null;
+  received_at: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export const WORKOUT_SECTION_LABELS: Record<WorkoutSectionType, string> = {
+  warmup: "Warm-up/Cooldown",
+  preset: "Pre-set",
+  kick: "Kick Set",
+  pull: "Pull Set",
+  main: "Main Set",
+  sprint: "Sprint Set",
+};
+
+// Tailwind color classes for the colored header on each section type.
+export const WORKOUT_SECTION_COLORS: Record<
+  WorkoutSectionType,
+  { bg: string; text: string }
+> = {
+  warmup: { bg: "bg-sky-600", text: "text-white" },
+  preset: { bg: "bg-amber-600", text: "text-white" },
+  kick: { bg: "bg-emerald-600", text: "text-white" },
+  pull: { bg: "bg-violet-600", text: "text-white" },
+  main: { bg: "bg-[#500000]", text: "text-white" },
+  sprint: { bg: "bg-rose-600", text: "text-white" },
 };
 

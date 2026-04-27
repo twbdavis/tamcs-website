@@ -16,7 +16,7 @@ import {
   deleteMeetAction,
   toggleMeetPublishedAction,
 } from "@/app/actions/meets";
-import type { Meet } from "@/lib/content-types";
+import type { Form, Meet } from "@/lib/content-types";
 
 export const metadata = { title: "Manage Meets" };
 
@@ -24,11 +24,18 @@ export default async function ManageMeetsPage() {
   await requireMinRole("officer");
 
   const supabase = await createClient();
-  const { data: meets } = await supabase
-    .from("meets")
-    .select("*")
-    .order("meet_date", { ascending: false })
-    .returns<Meet[]>();
+  const [{ data: meets }, { data: forms }] = await Promise.all([
+    supabase
+      .from("meets")
+      .select("*")
+      .order("meet_date", { ascending: false })
+      .returns<Meet[]>(),
+    supabase
+      .from("forms")
+      .select("*")
+      .order("title", { ascending: true })
+      .returns<Form[]>(),
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -48,7 +55,7 @@ export default async function ManageMeetsPage() {
 
       <section className="mt-8 rounded-lg border p-5">
         <h2 className="mb-4 text-lg font-semibold">New meet</h2>
-        <MeetForm />
+        <MeetForm forms={forms ?? []} />
       </section>
 
       <section className="mt-10">

@@ -42,5 +42,6 @@ export async function updateUserRoleAction(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/users");
-  return { success: "Role updated." };
+  revalidatePath("/dashboard/roster");
+  return { success: `Role updated to ${role}` };
 }

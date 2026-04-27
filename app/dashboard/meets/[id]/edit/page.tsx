@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMinRole } from "@/lib/auth/require-role";
 import { MeetForm } from "@/components/admin/meet-form";
-import type { Meet } from "@/lib/content-types";
+import type { Form, Meet } from "@/lib/content-types";
 
 export const metadata = { title: "Edit Meet" };
 
@@ -16,11 +16,14 @@ export default async function EditMeetPage({
   const { id } = await params;
 
   const supabase = await createClient();
-  const { data: meet } = await supabase
-    .from("meets")
-    .select("*")
-    .eq("id", id)
-    .single<Meet>();
+  const [{ data: meet }, { data: forms }] = await Promise.all([
+    supabase.from("meets").select("*").eq("id", id).single<Meet>(),
+    supabase
+      .from("forms")
+      .select("*")
+      .order("title", { ascending: true })
+      .returns<Form[]>(),
+  ]);
 
   if (!meet) notFound();
 
@@ -38,7 +41,7 @@ export default async function EditMeetPage({
       <p className="mt-1 text-muted-foreground">{meet.title}</p>
 
       <section className="mt-8 rounded-lg border p-5">
-        <MeetForm meet={meet} />
+        <MeetForm meet={meet} forms={forms ?? []} />
       </section>
     </div>
   );

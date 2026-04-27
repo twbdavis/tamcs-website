@@ -7,10 +7,11 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Admin section is for admins and the president. Officers manage nothing
-  // here — they get a read-only view on /dashboard.
-  // Belt-and-suspenders: proxy.ts already redirects unauthorized users.
-  await requireMinRole("admin");
+  // Officers can manage /admin/forms; everything else under /admin requires
+  // admin+. proxy.ts is the real gate (it lets officers through /admin/forms
+  // and blocks them elsewhere); this layout just backstops with the lowest
+  // role that has any /admin access.
+  await requireMinRole("officer");
 
   return (
     <>

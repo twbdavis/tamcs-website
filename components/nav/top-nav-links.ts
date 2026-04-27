@@ -2,6 +2,7 @@
 export const publicLinks = [
   { href: "/officers", label: "Officers" },
   { href: "/schedule", label: "Schedule" },
+  { href: "/meet-results", label: "Meets" },
   { href: "/team-records", label: "Records" },
 ];
 
@@ -12,4 +13,7 @@ export const visitorLinks = [
 ];
 
 // Extra nav items that only show up once a user is signed in.
-export const memberLinks = [{ href: "/forms", label: "Forms" }];
+export const memberLinks = [
+  { href: "/forms", label: "Forms" },
+  { href: "/top-times", label: "Top Times" },
+];

@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { RoleSelect } from "@/components/admin/role-select";
 import type { Profile, UserRole } from "@/lib/types";
 
@@ -20,6 +21,7 @@ type RowShape = {
   birthday: string;
   class_year: string;
   uin: string;
+  phone: string;
   role: UserRole;
   joined: string;
 };
@@ -28,6 +30,7 @@ const COLUMNS: Column[] = [
   { key: "first_name", label: "First Name", sortable: true },
   { key: "last_name", label: "Last Name", sortable: true },
   { key: "email", label: "Email", sortable: true },
+  { key: "phone", label: "Phone", sortable: true },
   { key: "birthday", label: "Birthday", sortable: true },
   { key: "class_year", label: "Class Year", sortable: true },
   { key: "uin", label: "UIN", sortable: true },
@@ -44,6 +47,7 @@ function toRow(p: Profile): RowShape {
     birthday: p.birthday ?? "",
     class_year: p.class_year ?? "",
     uin: p.uin ?? "",
+    phone: p.phone_number ?? "",
     role: p.role,
     joined: p.created_at ?? "",
   };
@@ -97,6 +101,7 @@ export function RosterTable({
         r.first_name,
         r.last_name,
         r.email,
+        r.phone,
         r.class_year,
         r.uin,
         r.role,
@@ -172,13 +177,14 @@ export function RosterTable({
                   </span>
                 </th>
               ))}
+              <th className="px-3 py-2 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {sorted.length === 0 ? (
               <tr>
                 <td
-                  colSpan={COLUMNS.length}
+                  colSpan={COLUMNS.length + 1}
                   className="px-3 py-6 text-center text-muted-foreground"
                 >
                   No matching members.
@@ -190,6 +196,9 @@ export function RosterTable({
                   <td className="px-3 py-2">{r.first_name || "—"}</td>
                   <td className="px-3 py-2">{r.last_name || "—"}</td>
                   <td className="px-3 py-2 text-muted-foreground">{r.email}</td>
+                  <td className="px-3 py-2 text-muted-foreground">
+                    {r.phone || "—"}
+                  </td>
                   <td className="px-3 py-2 text-muted-foreground">
                     {r.birthday || "—"}
                   </td>
@@ -211,6 +220,17 @@ export function RosterTable({
                   </td>
                   <td className="px-3 py-2 text-muted-foreground">
                     {r.joined ? new Date(r.joined).toLocaleDateString() : "—"}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <Link
+                      href={`/dashboard/roster/${r.id}/edit`}
+                      className={buttonVariants({
+                        variant: "outline",
+                        size: "sm",
+                      })}
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))

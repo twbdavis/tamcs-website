@@ -20,7 +20,9 @@
       "Bash(npm ls *)",
       "Bash(node -e \"console.log\\(require.resolve\\('sharp'\\)\\)\")",
       "Bash(node *)",
-      "Bash(xxd)"
+      "Bash(xxd)",
+      "Bash(xargs grep *)",
+      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\"; grep -n \"requireMinRole\\\\|requireRole\\\\|requireUser\\\\|profile?.role\\\\|profile.role\" {} | head -5')"
     ]
   }
 }

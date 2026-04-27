@@ -29,8 +29,10 @@ export type Profile = {
   birthday: string | null; // YYYY-MM-DD
   class_year: ClassYear | null;
   uin: string | null;
+  phone_number: string | null;
   constitution_agreed: boolean;
   onboarding_completed: boolean;
+  account_approved: boolean;
   created_at: string;
   updated_at: string;
 };

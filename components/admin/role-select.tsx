@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { updateUserRoleAction } from "@/app/actions/users";
@@ -20,16 +21,32 @@ export function RoleSelect({
   options: UserRole[];
   disabled?: boolean;
 }) {
-  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(
     updateUserRoleAction,
     null,
   );
 
+  // Controlled select. Initialize from prop, then keep it in sync if the
+  // server data refreshes (e.g. after router.refresh() following success,
+  // or if another tab changed the role).
+  const [role, setRole] = useState<UserRole>(currentRole);
   useEffect(() => {
-    if (state?.error) toast.error(state.error);
-    if (state?.success) toast.success(state.success);
-  }, [state]);
+    setRole(currentRole);
+  }, [currentRole]);
+
+  useEffect(() => {
+    if (state?.error) {
+      toast.error(state.error);
+      // Revert visible selection to whatever the server still has.
+      setRole(currentRole);
+    } else if (state?.success) {
+      toast.success(state.success);
+      // Pull the freshest server state so the rest of the row (and
+      // currentRole prop) reflects the new value.
+      router.refresh();
+    }
+  }, [state, currentRole, router]);
 
   // Make sure the user's current role is selectable, even if it's outside the
   // caller's normal assignable set (e.g. an admin viewing a president).
@@ -38,11 +55,12 @@ export function RoleSelect({
     : [currentRole, ...options];
 
   return (
-    <form ref={formRef} action={formAction} className="flex items-center gap-2">
+    <form action={formAction} className="flex items-center gap-2">
       <input type="hidden" name="id" value={userId} />
       <select
         name="role"
-        defaultValue={currentRole}
+        value={role}
+        onChange={(e) => setRole(e.target.value as UserRole)}
         disabled={disabled || pending}
         className={SELECT_CLASS}
       >
@@ -52,7 +70,11 @@ export function RoleSelect({
           </option>
         ))}
       </select>
-      <Button type="submit" size="sm" disabled={disabled || pending}>
+      <Button
+        type="submit"
+        size="sm"
+        disabled={disabled || pending || role === currentRole}
+      >
         {pending ? "…" : "Save"}
       </Button>
     </form>
