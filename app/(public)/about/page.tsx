@@ -56,7 +56,7 @@ function FacebookIcon({ className }: { className?: string }) {
 export const metadata = {
   title: "About",
   description:
-    "About Texas A&M Club Swimming — our story, our coach, our results, and the community we've built since 2017.",
+    "About Texas A&M Club Swimming",
 };
 
 type FourF = {
@@ -120,8 +120,8 @@ const ACTIVITIES = [
   },
   {
     Icon: Trophy,
-    title: "End-of-season Nationals",
-    body: "We close out every year competing at College Club Nationals.",
+    title: "End-of-season Championship meets",
+    body: "We close out every year attending nationals and hosting the Southwest Swim League championship meet.",
   },
 ];
 
@@ -141,7 +141,7 @@ export default function AboutPage() {
             About TAMCS
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-foreground/80">
-            Texas A&amp;M Club Swimming — where competition meets community
+            Texas A&amp;M Club Swimming: where competition meets community
             since 2017.
           </p>
         </div>
@@ -183,8 +183,8 @@ export default function AboutPage() {
               <span className="font-semibold text-[#500000]">competition</span>,{" "}
               <span className="font-semibold text-[#500000]">fitness</span>,{" "}
               <span className="font-semibold text-[#500000]">friendship</span>,
-              and <span className="font-semibold text-[#500000]">fun</span> —
-              entirely student-run, with dedicated coaching at every practice.
+              and <span className="font-semibold text-[#500000]">fun</span> -
+              entirely student-run.
             </p>
           </div>
         </div>

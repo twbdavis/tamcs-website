@@ -25,7 +25,7 @@ import {
 export const metadata = {
   title: "Join Us",
   description:
-    "How to join Texas A&M Club Swimming — membership requirements, tryouts, dues, and contact info.",
+    "How to join Texas A&M Club Swimming",
 };
 
 type FourF = {
@@ -46,6 +46,8 @@ const REQUIREMENTS = [
     Icon: GraduationCap,
     text: "A&M undergraduate and graduate students must be enrolled in at least 6 credit hours. Blinn TEAM students must be enrolled in at least 3 credit hours at Texas A&M.",
   },
+  
+  
   {
     Icon: GraduationCap,
     text: "Blinn TEAM and affiliated co-curricular students are eligible as long as they pay University fees.",
@@ -54,10 +56,7 @@ const REQUIREMENTS = [
     Icon: Award,
     text: "Athletes must demonstrate proficiency through the tryout process.",
   },
-  {
-    Icon: ShieldCheck,
-    text: "Members must be 18 or older at the time of registration due to travel liability requirements.",
-  },
+  
 ];
 
 const STEPS = [
@@ -131,7 +130,7 @@ export default function JoinUsPage() {
           <div className="text-center">
             <h2 className={HEADING_ACCENT}>The Four F&apos;s</h2>
             <p className="mt-4 text-sm text-muted-foreground">
-              Our head coach Jill Gellatly&apos;s philosophy since &apos;89.
+            
             </p>
           </div>
           <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">

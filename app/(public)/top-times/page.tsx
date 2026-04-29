@@ -11,7 +11,7 @@ export default function TopTimesPage() {
       <header className="mb-6">
         <h1 className="text-4xl font-bold">Top Times</h1>
         <p className="mt-2 text-muted-foreground">
-          Live top times for TAMCS swimmers, pulled from SwimCloud.
+          The top times for Texas A&M Club Swimming throughout the years!
         </p>
       </header>
 
